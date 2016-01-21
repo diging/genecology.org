@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'haystack',
     'blog',
     'markupfield',
 ]
@@ -128,8 +129,15 @@ STATICFILES_DIRS = (
     os.path.join(PWD, '..', 'static/'),
 )
 
-print STATICFILES_DIRS
-
 MARKUP_FIELD_TYPES = (
     ('markdown', markdown.markdown),
 )
+
+AUTH_USER_MODEL = 'blog.GenecologyUser'
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+    },
+}

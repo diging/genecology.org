@@ -1,0 +1,64 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+    <div class="jumbotron">
+        <div class="row">
+            <div class="col-sm-5">
+                <img class="img-responsive center-block" src="{% static 'images/logo.png' %}"/>
+            </div>
+            <div class="col-sm-7">
+                <h2 class="text-right">A data-driven history of <span class="text-orange">ecological genetics</span> in Britain.</h2>
+                <p class="pull-right"><a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            {% for post in posts %}
+            <div class="blog-post-summary">
+                <h3>{{ post.title }}</h3>
+                <p class="text-muted">{{ post.creator.full_name }} | {{ post.created }}</p>
+                <p>{{ post.summary }}</p>
+                <div>
+                    {% for tag in post.tags.all %}
+                    <code><a href="{% url 'tag' tag.id %}">{{ tag.slug }}</a></code>
+                    {% endfor %}
+                </div>
+                <p class="text-primary pull-right">
+                    <a href="{% url 'post' post.id %}">Read More</a>
+                </p>
+
+            </div>
+            {% endfor %}
+
+        </div>
+        <div class="col-sm-4">
+            <div class="panel">
+                <div class="panel-body">
+                    <img class="img-responsive img-rounded" src="{% static 'images/aber.png' %}" />
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-heading">
+                    <h4>Topics</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                        {% for tag in tags %}
+                        <a href="{% url 'tag' tag.id %}" class="list-group-item clearfix"><code>{{ tag.slug}}</code>: {{ tag.title }} <span class="badge">{{ tag.num_posts }}</span></a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

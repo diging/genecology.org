@@ -13,10 +13,22 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 
+
+from haystack.views import FacetedSearchView
+from haystack.query import SearchQuerySet
+
+from blog.views import PostSearchView, PostFacetedSearchForm
+
+sqs = SearchQuerySet().facet('creator', size=100)
+
+
 urlpatterns = [
-    url(r'^$', 'blog.views.home', name='home'), 
+    url(r'^$', 'blog.views.home', name='home'),
+    url(r'^post/(?P<post_id>[0-9]+)/$', 'blog.views.post', name='post'),
+    url(r'^tag/(?P<tag_id>[0-9]+)/$', 'blog.views.tag', name='tag'),
+    url(r'^search/', PostSearchView(form_class=PostFacetedSearchForm, searchqueryset=sqs), name='search'),
     url(r'^admin/', admin.site.urls),
 ]
