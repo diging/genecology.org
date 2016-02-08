@@ -1,5 +1,5 @@
 Django==1.9.1
-django-haystack>=2.4.0
+git+git://github.com/django-haystack/django-haystack.git#egg=django-haystack
 django-markupfield==1.4.0
 Markdown==2.6.5
 wheel==0.24.0
