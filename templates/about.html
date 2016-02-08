@@ -1,0 +1,61 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>What is the Genecology Project?</h1>
+            <p>
+                The Genecology Project is a digital investigation of the history of ecological genetics in Britain.
+                Ecological genetics is a scientific field focused on the genetics of natural populations. In contrast to classical genetics,
+                in which scientists study patterns of heredity in controlled populations in a laboratory, scientists who work in the field of
+                ecological genetics are interested in how the hereditary composition of wild populations of plants and animals change over time.
+                That is, they study the processes of evolution <strong>as it happens</strong>, and try to understand how and why groups of
+                organisms change in the ways that they do.
+            </p>
+            <p>
+                While many of the basic principles of evolution and heredity have been around since the middle of the 19th century, ecological
+                genetics is actually a relatively new field: the term "ecological genetics" was not in widespread use until the 1960s. Up until
+                the 1950s most scientists did not think that evolutionary change could occur quickly enough to be investigated in "real time,"
+                except in carefully controlled laboratory experiments. After the 1950s, however, the new field of ecological genetics became
+                an increasingly popular area of research for biologists who wanted to study evolution in natural populations
+                <strong><em>in action</em></strong>. As it happens, much of that excitement and activity took place in Britain, and so that
+                is where our investigation begins. But ecological genetics did not come out of nowhere: the roots of ecological genetics
+                can be traced to the work of scientists in Scandinavia, Europe, Russia, and North America dating back to the 1800s.
+            </p>
+            <p>
+                Today, research in ecological genetics continues to generate new insights into how organisms evolve. The results of ecological
+                genetics research informs our decisions about what species need special protection, and what we can do to protect them. It also
+                gives us valuable information about how to improve agricultural practices. Most importantly, ecological genetics research gives
+                us a deeper understanding of the complex processes and interactions that produce and maintain the rich diversity of plants
+                and animals on this planet.
+            </p>
+            <p>
+                Our goal is to document, narrate, and contextualize the emergence and development of ecological genetics, starting in Britain.
+                Where did ecological genetics come from? Who studied ecological genetics, and where did they work? How did the questions,
+                methods, and theories of ecological genetics change over time? What are ecological geneticists doing today, and how is their
+                work shaped by the history of their field?
+            </p>
+            <hr />
+            <div class="row">
+                <div class="col-sm-2">
+                    <img src="{% static 'images/nsf1.gif' %}" class="img-responsive" />
+                </div>
+                <div class="col-sm-10">
+			        This material is based upon work supported by the National Science Foundation Graduate Research
+                    Fellowship Program under Grant No. 2011131209, and NSF Doctoral Dissertation Research Improvement
+                    Grant No. 1256752.
+                </div>
+            </div>
+			<!-- <img src="/static/browser/images/logos/gpsa_logo.gif" width="70" style="float:left;margin-right: 5px;" />
+			Funded in part by the ASU Graduate and Professional Students Association, under a Graduate Research Support grant, "Models of Phenotypic Plasticity in Ecology," and under multiple conference and research travel grants.</p> -->
+
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

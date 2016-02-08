@@ -1,0 +1,76 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <h1>Research Team</h1>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="hovereffect">
+
+                        <img class="img-responsive" src="{% static 'images/erick.jpg' %}" />
+                        <div class="overlay">
+                            <h2>Erick Peirson</h2>
+                            <a class="info" href="http://asu.academia.edu/erickpeirson">Profile</a>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="col-sm-4">
+                    <div class="hovereffect">
+                        <img class="img-responsive" src="{% static 'images/genevieve.png' %}" />
+                        <div class="overlay">
+                            <h2>Genevieve Pirotte</h2>
+                            <!-- <a class="info" href="http://asu.academia.edu/erickpeirson">Profile</a> -->
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-sm-4">
+                    <div class="hovereffect">
+                        <img src="{% static 'images/sam.png' %}" class="img-responsive" />
+                        <div class="overlay">
+                            <h2>Samantha Hauserman</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <!-- <div class="row">
+                <div class="col-sm-4">
+
+                    <img src="{% static 'images/bianca.jpg' %}" class="featured" />
+                    <header class="headspace">
+                        <h4>Bianca Zietal</h4>
+                    </header>
+                    <p>Researcher (Alumna)</p>
+
+                </div>
+                <div class="col-sm-4">
+                    <img src="{% static 'images/ken.jpg' %}" class="featured" />
+                    <header class="headspace">
+                        <h4>Ken Aiello</h4>
+                    </header>
+                    <p>PhD Student at Arizona State University</p>
+
+                </div>
+                <div class="col-sm-4">
+            {% static 'images/deryc.jpg' %}
+        </div>
+        </div> -->
+        <div class="col-sm-4">
+            <div class="panel">
+                <div class="panel-body">
+                    <img class="img-responsive img-rounded" src="{% static 'images/aber.png' %}" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

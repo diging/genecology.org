@@ -1,0 +1,48 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <h1>Contribute</h1>
+            <p>
+                The Genecology Project is a collaborative, open-note research project, and we're eager for your contributions! You can
+                reach Erick at <a href="mailto:erick.peirson@asu.edu">erick.peirson@asu.edu</a>.
+            </p>
+
+            <p>
+                If you are a scholar with a perspective to share on the people, places, research, or contexts that intersect the story of
+                ecological genetics in Britain and beyond, please don't hesitate to write.
+            </p>
+            <p>
+                We are especially excited to hear from people who have conducted research in the field of ecological genetics, regardless of the
+                stage of career. Oral histories and written recollections are an important source of data for this project. We're eager to talk
+                to you!
+            </p>
+            <p>
+                Finally, we're always on the lookout for archival material lurking in dark corners. If you have come across material that
+                seems relevant, please let us know. If you have material to share (in digital or physical form), we would be very grateful
+                to receive it.
+            </p>
+        </div>
+        <div class="col-sm-4">
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="img-hover">
+                        <img class="img-responsive" src="{% static 'images/watson.png' %}" />
+                        <div class="overlay">
+                            <h5>Ecologist Patricia J. Watson<br />
+                                (Scottish Plant Breeding Station)</h5>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

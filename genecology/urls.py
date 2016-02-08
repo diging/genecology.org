@@ -20,15 +20,19 @@ from django.contrib import admin
 from haystack.views import FacetedSearchView
 from haystack.query import SearchQuerySet
 
-from blog.views import PostSearchView, PostFacetedSearchForm
+from blog import views as blog_views
 
 sqs = SearchQuerySet().facet('creator', size=100)
 
 
 urlpatterns = [
-    url(r'^$', 'blog.views.home', name='home'),
-    url(r'^post/(?P<post_id>[0-9]+)/$', 'blog.views.post', name='post'),
-    url(r'^tag/(?P<tag_id>[0-9]+)/$', 'blog.views.tag', name='tag'),
-    url(r'^search/', PostSearchView(form_class=PostFacetedSearchForm, searchqueryset=sqs), name='search'),
+    url(r'^$', blog_views.home, name='home'),
+    url(r'^about/$', blog_views.about, name='about'),
+    url(r'^contribute/$', blog_views.contribute, name='contribute'),
+    url(r'^methods/$', blog_views.methods, name='methods'),
+    url(r'^team/$', blog_views.team, name='team'),
+    url(r'^post/(?P<post_id>[0-9]+)/$', blog_views.post, name='post'),
+    url(r'^tag/(?P<tag_id>[0-9]+)/$', blog_views.tag, name='tag'),
+    url(r'^search/', blog_views.PostSearchView(form_class=blog_views.PostFacetedSearchForm, searchqueryset=sqs), name='search'),
     url(r'^admin/', admin.site.urls),
 ]

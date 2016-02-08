@@ -1,0 +1,35 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <h1>Our Research Methods</h1>
+            <p>
+                We use a wide range of materials and methods to investigate the history of ecological genetics. In addition to published scientific
+                papers, scientists sometimes leave behind letters, notes, and photographs--preserved in archives--that help us to piece together
+                what they were doing and thinking at certain moments in their careers. We also collect oral histories from both retired and practicing
+                scientists who were involved in ecological genetics research. Making sense of all of these materials is hard work, and we do that in
+                two ways: (1) through careful and systematic reading, and (2) using digital tools and methods to collect and analyze information about
+                scientific activity. Each of these approaches has its own advantages and drawbacks, but by using them together we can gain an even richer
+                understand of the history of this scientific field.
+            </p>
+            <p>
+                Throughout the project we will update this page with details about the tools and techniques that we use to reconstruct the history of
+                ecological genetics.
+            </p>
+        </div>
+        <div class="col-sm-4">
+            <div class="panel">
+                <div class="panel-body">
+                    <img class="img-responsive" src="{% static 'images/genecology_graph_small.png' %}" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
