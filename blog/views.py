@@ -27,8 +27,8 @@ def home(request):
     """
     context = get_default_context()
     context.update({
-        'posts': Post.objects.all().order_by('-created'),
-        'tags': Tag.objects.filter(published=True),
+        'posts': Post.objects.filter(published=True).order_by('-created'),
+        'tags': Tag.objects.all(),
         'active': 'blog',
     })
     return render(request, 'home.html', context)
