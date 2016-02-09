@@ -1,7 +1,7 @@
 dj-database-url==0.4.0
 Django==1.9.1
 django-gunicorn==0.1.1
-django-haystack==2.5.dev0
+git+git://github.com/django-haystack/django-haystack.git#egg=django-haystack
 django-markupfield==1.4.0
 gunicorn==19.4.5
 Markdown==2.6.5
