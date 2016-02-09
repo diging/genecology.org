@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django import forms
+from django.http import HttpResponse, HttpResponseNotFound
 
 from haystack.views import FacetedSearchView
 from haystack.query import EmptySearchQuerySet
@@ -38,7 +39,10 @@ def post(request, post_id):
     """
     Display the content of a :class:`.Post`\.
     """
-    post = get_object_or_404(Post, pk=post_id, published=True)
+    post = get_object_or_404(Post, pk=post_id)
+
+    if not (request.user.is_staff or post.published):
+        return HttpResponseNotFound("<h1>Post not found.</h1>")
 
     context = get_default_context()
     context.update({
