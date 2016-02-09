@@ -28,7 +28,7 @@ def home(request):
     context = get_default_context()
     context.update({
         'posts': Post.objects.all().order_by('-created'),
-        'tags': Tag.objects.all(),
+        'tags': Tag.objects.filter(published=True),
         'active': 'blog',
     })
     return render(request, 'home.html', context)
@@ -38,7 +38,7 @@ def post(request, post_id):
     """
     Display the content of a :class:`.Post`\.
     """
-    post = get_object_or_404(Post, pk=post_id)
+    post = get_object_or_404(Post, pk=post_id, published=True)
 
     context = get_default_context()
     context.update({

@@ -24,6 +24,8 @@ class Post(models.Model):
 
     tags = models.ManyToManyField('Tag', related_name='tagged_posts')
 
+    published = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)[:100]
         super(Post, self).save(*args, **kwargs)

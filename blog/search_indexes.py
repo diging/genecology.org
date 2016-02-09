@@ -13,7 +13,7 @@ class PostIndex(indexes.SearchIndex, indexes.Indexable):
         return Post
 
     def index_queryset(self, using=None):
-        return self.get_model().objects.filter(created__lte=datetime.datetime.now())
+        return self.get_model().objects.filter(published=True).filter(created__lte=datetime.datetime.now())
 
     def prepare_creator(self, obj):
         return obj.creator.full_name
