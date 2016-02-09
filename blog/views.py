@@ -58,7 +58,7 @@ def tag(request, tag_id):
     context = get_default_context()
     context.update({
         'tag': tag,
-        'posts': tag.tagged_posts.all().order_by('-created'),
+        'posts': tag.tagged_posts.filter(published=True).order_by('-created'),
         'active': 'blog',
     })
     return render(request, 'tag.html', context)

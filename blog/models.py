@@ -43,7 +43,7 @@ class Tag(models.Model):
         return self.slug
 
     def num_posts(self):
-        return self.tagged_posts.count()
+        return self.tagged_posts.filter(published=True).count()
 
 
 class GenecologyUserManager(BaseUserManager):
