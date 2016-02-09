@@ -19,7 +19,7 @@ class Post(models.Model):
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=100, blank=True)
-    summary = models.TextField()
+    summary = MarkupField(markup_type='markdown')
     body = MarkupField(markup_type='markdown')
 
     tags = models.ManyToManyField('Tag', related_name='tagged_posts')
