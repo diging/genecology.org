@@ -11,3 +11,4 @@ Whoosh==2.7.0
 whitenoise==2.0.6
 conceptpower-api
 celery
+django-grappelli

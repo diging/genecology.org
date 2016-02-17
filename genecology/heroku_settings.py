@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'haystack',
+    'concepts',
     'blog',
     'markupfield',
 ]
@@ -142,4 +144,16 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
     },
+}
+
+ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
+
+GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS= {
+    "blog": {
+        "tag": ("id__iexact", "title__startswith", "slug__startswith"),
+        "post": ("id__iexact", "title__startswith", "slug__startswith"),
+    },
+    "concepts": {
+        "concept": ("id__iexact", "label__startswith", "uri__iexact"),
+    }
 }
