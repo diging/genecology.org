@@ -5,24 +5,88 @@ from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser, PermissionsMixin, Permission
 )
 from django.utils.text import slugify
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+
 from markupfield.fields import MarkupField
 
+from concepts.models import Concept, Type
 
-class Post(models.Model):
+
+class ContentRelation(models.Model):
+    name = models.CharField(max_length=1000)
+    description = MarkupField(markup_type='markdown', blank=True)
+
+    source_content_type = models.ForeignKey(ContentType, related_name='as_source')
+    source_instance_id = models.IntegerField(default=0)
+    source = GenericForeignKey('source_content_type', 'source_instance_id')
+
+    target_content_type = models.ForeignKey(ContentType, related_name='as_target')
+    target_instance_id = models.IntegerField(default=0)
+    target = GenericForeignKey('target_content_type', 'target_instance_id')
+
+
+class Content(models.Model):
+    class Meta:
+        abstract = True
+
+    creator = models.ForeignKey('GenecologyUser')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    about = models.ManyToManyField(Concept, blank=True)
+    tags = models.ManyToManyField('Tag', blank=True)
+
+    slug = models.SlugField(max_length=100, blank=True)
+
+    relations_from = GenericRelation('ContentRelation',
+                                     related_query_name='source_content',
+                                     content_type_field='source_content_type',
+                                     object_id_field="source_instance_id")
+
+    relations_to = GenericRelation('ContentRelation',
+                                    related_query_name='target_content',
+                                    content_type_field='target_content_type',
+                                    object_id_field="target_instance_id")
+
+
+class Note(Content):
+    """
+    """
+
+    content = MarkupField(markup_type='markdown')
+
+
+class ConceptProfile(Content):
+    concept = models.ForeignKey(Concept, related_name='profile')
+
+    description = MarkupField(markup_type='markdown')
+
+
+class Resource(Content):
+    source = models.CharField(max_length=1000)
+    identifier = models.CharField(max_length=1000)
+    identifier_type = models.CharField(max_length=1000)
+    description = MarkupField(markup_type='markdown')
+
+    class Meta:
+        abstract = True
+
+
+class Image(Resource):
+    image = models.FileField(upload_to='images/')
+    original_format = models.CharField(max_length=255)
+
+
+class Post(Content):
     """
     A blog post.
     """
 
-    creator = models.ForeignKey('GenecologyUser', related_name='posts')
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
     title = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=100, blank=True)
+
     summary = MarkupField(markup_type='markdown')
     body = MarkupField(markup_type='markdown')
-
-    tags = models.ManyToManyField('Tag', related_name='tagged_posts')
 
     published = models.BooleanField(default=False)
 
@@ -43,7 +107,7 @@ class Tag(models.Model):
         return self.slug
 
     def num_posts(self):
-        return self.tagged_posts.filter(published=True).count()
+        return self.post_set.filter(published=True).count()
 
 
 class GenecologyUserManager(BaseUserManager):

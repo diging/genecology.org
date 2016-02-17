@@ -35,4 +35,6 @@ urlpatterns = [
     url(r'^tag/(?P<tag_id>[0-9]+)/$', blog_views.tag, name='tag'),
     url(r'^search/', blog_views.PostSearchView(form_class=blog_views.PostFacetedSearchForm, searchqueryset=sqs), name='search'),
     url(r'^admin/', admin.site.urls),
+    url(r'^grappelli/', include('grappelli.urls')),
+
 ]
