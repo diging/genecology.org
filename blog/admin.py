@@ -46,10 +46,27 @@ class ContentRelationAdmin(admin.ModelAdmin):
         model = ContentRelation
 
     related_lookup_fields = {
-        'generic': [['source_content_type', 'source_instance_id'], ['target_content_type', 'target_instance_id']],
+        'generic': [['source_content_type', 'source_instance_id'],
+                    ['target_content_type', 'target_instance_id']],
     }
+
+
+class ConceptProfileAdmin(admin.ModelAdmin):
+    class Meta:
+        model = ConceptProfile
+
+    raw_id_fields = ('tags',)
+    exclude = ('about', )
+    raw_id_fields = ('concept',)
+    autocomplete_lookup_fields = {
+        'm2m': ['tags'],
+        'fk': ['concept'],
+    }
+    inlines = [ContentRelationInline,]
+
 
 admin.site.register(GenecologyUser, GenecologyUserAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Tag)
 admin.site.register(ContentRelation, ContentRelationAdmin)
+admin.site.register(ConceptProfile, ConceptProfileAdmin)
