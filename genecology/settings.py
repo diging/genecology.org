@@ -157,3 +157,12 @@ GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS= {
         "concept": ("id__iexact", "label__startswith", "uri__iexact"),
     }
 }
+
+
+CONCEPT_TYPES = {
+    'Person': 'http://www.digitalhps.org/types/TYPE_986a7cc9-c0c1-4720-b344-853f08c136ab',    # E21 Person.
+    'Organism': 'http://www.digitalhps.org/types/TYPE_01054126-b6ec-4d31-9b7f-7bc6738eb79a',  # E20 Biological Object.
+    'Place': 'http://www.digitalhps.org/types/TYPE_dfc95f97-f128-42ae-b54c-ee40333eae8c',     # E53 Place.
+    'Document': 'http://www.digitalhps.org/types/TYPE_870bbf70-ef89-4574-b4ad-decebc80a177',  # E31 Document.
+    'Institution': 'http://www.digitalhps.org/types/TYPE_c284695b-e2c2-4c59-b7a3-3f84d4a98c89',    # E72 Legal Object.
+}

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django import forms
 from django.http import HttpResponse, HttpResponseNotFound
+from django.conf import settings
 
 from haystack.views import FacetedSearchView
 from haystack.query import EmptySearchQuerySet
@@ -66,6 +67,32 @@ def tag(request, tag_id):
         'active': 'blog',
     })
     return render(request, 'tag.html', context)
+
+
+def people(request):
+    """
+    Lists :class:`blog.ConceptProfile`\s for :class:`concepts.Concept`\s with
+    :class:`concepts.Type` E21 Person.
+    """
+    queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Person'])
+    return HttpResponse(queryset.count())
+
+
+def institutions(request):
+    """
+    """
+    queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Institution'])
+    return HttpResponse(queryset.count())
+
+
+def organisms(request):
+    queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Organism'])
+    return HttpResponse(queryset.count())
+
+
+def places(request):
+    queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Place'])
+    return HttpResponse(queryset.count())
 
 
 def about(request):
