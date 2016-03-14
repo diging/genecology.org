@@ -1,0 +1,21 @@
+<div class="modal fade" id="historyModal" tabindex="-1" role="dialog" aria-labelledby="historyModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="historyModalLabel">Revision history for {{type}} <span class="text text-info">{{ title }}</span></h3>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                    {% for version in versions %}
+                    <a class="list-group-item" href="?version={{version.id}}">{{ version.date_created}} by {{ version.user }}<br />
+                    <span class="text text-muted">{{ version.comment }}</span></a>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

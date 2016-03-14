@@ -1,0 +1,47 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+<script src="{% static 'js/angular/conceptprofilesearch.js' %}"></script>
+<div class="container" ng-app="ConceptProfileSearchApp">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="h1">{{ title }}</div>
+            {% if subtitle %}<div class="h3">{{ subtitle }}</div>{% endif %}
+            <div>{{ body }}</div>
+
+            {% verbatim %}
+            <div ng-controller="ConceptProfileSearchController">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input
+                            class="form-control"
+                            type="text"
+                            name="search"
+                            placeholder="Search for a profile by name. Begin typing to filter results."
+                            ng-model="query"
+                            ng-change="search()"
+                            ng-init="profileType={% endverbatim %}'{{ type }}'{% verbatim %}; search();"></input>
+                        <span class="input-group-addon add-on"><span class="glyphicon glyphicon-search"></span></span>
+                    </div>
+                </div>
+            <div class="panel panel-default">
+
+
+                <div id="profile-results" class="profile-results list-group" scrolly="extend()">
+                    <a href="{{ profile.url }}" class="profile-summary list-group-item" ng-repeat="profile in profiles">
+                        <span class="h5">{{ profile.concept.label }}</span>
+                        <div class="text-muted">{{ profile.creator.full_name }} | {{ profile.created }}</div>
+                        <div>{{ profile.summary }}</div>
+                    </a>
+                </div>
+                <div class="pull-right">Displaying {{nresults}} of {{nmax}} results.</div>
+            </div>
+        </div>
+        {% endverbatim %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

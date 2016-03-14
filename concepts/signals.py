@@ -12,7 +12,7 @@ logger.setLevel('DEBUG')
 
 ### Handle Concept and Type signals. ###
 
-# @receiver(post_save, sender=Concept)
+@receiver(post_save, sender=Concept)
 def concept_post_save_receiver(sender, **kwargs):
     """
     When a :class:`.Concept` is saved, attempt to resolve it using one of the
@@ -22,7 +22,7 @@ def concept_post_save_receiver(sender, **kwargs):
     instance = kwargs.get('instance', None)
     resolve_concept.delay(sender, instance)
 
-# @receiver(post_save, sender=Type)
+@receiver(post_save, sender=Type)
 def type_post_save_receiver(sender, **kwargs):
     """
     When a :class:`.Type` is saved, attempt to resolve it using one of the

@@ -12,6 +12,8 @@ from markupfield.fields import MarkupField
 
 from concepts.models import Concept, Type
 
+from reversion import revisions as reversion
+
 
 class ContentRelation(models.Model):
     name = models.CharField(max_length=1000)
@@ -24,6 +26,7 @@ class ContentRelation(models.Model):
     target_content_type = models.ForeignKey(ContentType, related_name='as_target')
     target_instance_id = models.IntegerField(default=0)
     target = GenericForeignKey('target_content_type', 'target_instance_id')
+
 
 
 class Content(models.Model):
@@ -59,7 +62,7 @@ class Note(Content):
 
 class ConceptProfile(Content):
     concept = models.ForeignKey(Concept, related_name='profile')
-
+    summary = MarkupField(markup_type='markdown')
     description = MarkupField(markup_type='markdown')
 
 
@@ -68,6 +71,7 @@ class Resource(Content):
     identifier = models.CharField(max_length=1000)
     identifier_type = models.CharField(max_length=1000)
     description = MarkupField(markup_type='markdown')
+
 
     class Meta:
         abstract = True
@@ -180,3 +184,11 @@ class GenecologyUser(AbstractBaseUser, PermissionsMixin):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+
+reversion.register(ContentRelation)
+reversion.register(Note)
+reversion.register(Tag)
+reversion.register(ConceptProfile)
+reversion.register(Image)
+reversion.register(Post)
