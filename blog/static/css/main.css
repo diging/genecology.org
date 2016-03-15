@@ -135,3 +135,36 @@ transition-delay:.2s;
     background-color: rgba(0,0,0,.5);
     -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
+
+
+.table-data-container {
+
+}
+
+.table-data {
+    font-size: 8pt;
+}
+
+.table-data > tbody {
+    
+}
+
+.table-data > tbody > tr > td {
+    overflow-x: ellipsis;
+}
+
+.table-data > tbody > tr > td {
+    cursor: pointer;
+}
+
+.anchor {
+    opacity: 0;
+}
+
+.anchor-show {
+    opacity: 1;
+}
+
+.data-row-highlight {
+    background: rgba(255, 165, 0, 0.5);
+}

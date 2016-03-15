@@ -3,6 +3,8 @@ from django import forms
 from django.http import HttpResponse, HttpResponseNotFound
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -19,9 +21,42 @@ from reversion.helpers import generate_patch_html
 
 from models import *
 from blog.serializers import *
+from concepts.authorities import get_namespace, get_by_namespace
+
+import urllib2 as urllib
+import csv
 
 
 ## Helper functions start here.
+
+def validate_url(value):
+    """
+    Evaluate whether a string is a URL.
+    """
+    try:
+        URLValidator()(value)
+        return True
+    except ValidationError:
+        return False
+
+
+def detect_uri(cell):
+    """
+    Convert URIs to labeled links to :class:`.ConceptProfile` view.
+
+    Will create new :class:`.Concept` and :class:`.ConceptProfile` instances
+    if a matching authority is found.
+    """
+    if validate_url(cell):
+        namespace = get_namespace(cell)
+        managers = get_by_namespace(namespace)
+        if len(managers) > 0:
+            concept = Concept.objects.get_or_create(uri=cell, authority=managers[0].__name__)[0]
+            conceptprofile = ConceptProfile.objects.get_or_create(concept=concept, defaults={'creator_id': 1, 'summary': 'Pending', 'description': 'Pending'})[0]
+            cpurl = reverse('conceptprofile', args=(conceptprofile.id,))
+            cell = mark_safe('<a class="label label-success" href="%s">%s</a>' % (cpurl, concept.label))
+    return cell
+
 
 def get_user_or_none(pk):
     """
@@ -67,6 +102,24 @@ def home(request):
         'active': 'blog',
     })
     return render(request, 'home.html', context)
+
+
+def datum(request, data_id):
+    data_object = get_object_or_404(Data, pk=data_id)
+    response = urllib.urlopen(data_object.location)
+    reader = csv.reader(response)
+
+    content = [[detect_uri(cell) for cell in row] for row in reader]
+
+
+    context = get_default_context()
+    context.update({
+        'column_headers': content[0],
+        'data': enumerate(content[1:]),
+        'data_object': data_object,
+    })
+    return render(request, 'csv.html', context)
+
 
 
 def post(request, post_id):
@@ -154,16 +207,31 @@ def tag_rest_detail(request, tag_id):
     return HttpResponse(json, content_type='application/json')
 
 
-
 def conceptprofile(request, profile_id):
-    return HttpResponse()
+    profile = get_object_or_404(ConceptProfile, pk=profile_id)
 
+    available_versions = reversion.get_for_object(profile)
+    versions = get_version_data(available_versions)
+    version_id = request.GET.get('version', None)
+    body = profile.description
+    subtitle = None
 
-# def conceptprofile_rest_list(request):
-#     typed = request.GET.get('type', None)
-#     queryset = ConceptProfile.objects.all()
-#     filter(concept__typed__uri=settings.CONCEPT_TYPES['Person'])
-#
+    if version_id and int(version_id) != available_versions[0].revision_id:
+        version = available_versions.get(revision_id=version_id)
+        profile = version.object_version.object
+        subtitle = 'Historical version %s' % version_id
+        body = mark_safe(generate_patch_html(version, available_versions[0], 'description'))
+
+    context = get_default_context()
+    context.update({
+        'profile': profile,
+        'body': body,
+        'active': '',
+        'versions': versions,
+        'subtitle': subtitle,
+    })
+    return render(request, 'conceptprofile.html', context)
+
 
 def conceptprofiles(request, queryset, typed=''):
     context = get_default_context()
@@ -175,7 +243,7 @@ def conceptprofiles(request, queryset, typed=''):
         'active': '',
         'type': typed,
     })
-    return render(request, 'conceptprofile.html', context)
+    return render(request, 'conceptprofiles.html', context)
 
 
 def people(request):

@@ -1,0 +1,74 @@
+{% extends "base_site.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="h1">{{ data_object.name }}</div>
+            {% if subtitle %}<div class="h3">{{ subtitle }}</div>{% endif %}
+            <div>{{ body }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="panel table-data-container">
+
+            <table class="table table-responsive table-condensed table-data table-hover">
+                <thead>
+                    <tr>
+                        <th></th>
+                        {% for column_header in column_headers %}
+                        <th>{{ column_header }}</th>
+                        {% endfor %}
+                    </td>
+                </thead>
+                <tbody>
+                    {% for i, row in data %}
+                    <tr class="data-row" id="row_{{i}}">
+                        <td><a name="row_{{i}}" href="#row_{{i}}" class="anchor"><i class="fa fa-anchor"></i></a></td>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var highlightActive = function() {
+        $('.data-row').removeClass('data-row-highlight');
+        $('.anchor').removeClass('anchor-show');
+        var active_row_id = window.location.href.split('#')[1];
+        var active_row = $('#' + active_row_id);
+        active_row.addClass('data-row-highlight')
+            .unbind('mouseenter')
+            .unbind('mouseleave');
+        active_row.find("a")
+            .addClass('anchor-show');
+    }
+
+    $('.data-row').click(function() {
+        var href = $(this).find("a").attr("href");
+        if(href) {
+            window.location = href;
+        }
+        highlightActive();
+    });
+
+    $('.data-row').hover(function() {
+        $(this).find("a").addClass('anchor-show');
+    }, function() {
+        $(this).find("a").removeClass('anchor-show');
+    });
+    highlightActive();
+
+
+});
+</script>
+{% endblock %}

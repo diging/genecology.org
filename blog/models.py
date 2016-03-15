@@ -14,19 +14,46 @@ from concepts.models import Concept, Type
 
 from reversion import revisions as reversion
 
+import re
+
+
+def help_text(s):
+    """
+    Cleans up help strings so that we can write them in ways that are
+    human-readable without screwing up formatting in the admin interface.
+    """
+    return re.sub('\s+', ' ', s).strip()
+
 
 class ContentRelation(models.Model):
-    name = models.CharField(max_length=1000)
-    description = MarkupField(markup_type='markdown', blank=True)
+    instance_of = models.ForeignKey('RDFProperty',
+                                    related_name='content_relations',
+                                    blank=True, null=True,
+                                    help_text=help_text("""
+    Each relation should have a formal type or property from a controlled
+    vocabulary. If you don't see an appropriate option here, we chould consider
+    loading additional vocabularies or, if absolutely necessary, creating our
+    own."""))
 
-    source_content_type = models.ForeignKey(ContentType, related_name='as_source')
+    name = models.CharField(max_length=1000, blank=True, null=True,
+                            help_text=help_text("""
+    Descriptive name for the relation. E.g. "elaborates on", "provides context
+    for", "is related to"."""))
+
+    description = MarkupField(markup_type='markdown', blank=True,
+                              help_text=help_text("""
+    If appropriate, provide further elaboration on the nature of the relation.
+    """))
+
+    source_content_type = models.ForeignKey(ContentType,
+                                            related_name='as_source')
     source_instance_id = models.IntegerField(default=0)
     source = GenericForeignKey('source_content_type', 'source_instance_id')
 
-    target_content_type = models.ForeignKey(ContentType, related_name='as_target')
+    target_content_type = models.ForeignKey(ContentType,
+                                            related_name='as_target')
     target_instance_id = models.IntegerField(default=0)
     target = GenericForeignKey('target_content_type', 'target_instance_id')
-
 
 
 class Content(models.Model):
@@ -52,6 +79,9 @@ class Content(models.Model):
                                     content_type_field='target_content_type',
                                     object_id_field="target_instance_id")
 
+    instance_of = models.ForeignKey('RDFClass',
+                                    blank=True, null=True)
+
 
 class Note(Content):
     """
@@ -67,19 +97,96 @@ class ConceptProfile(Content):
 
 
 class Resource(Content):
-    source = models.CharField(max_length=1000)
-    identifier = models.CharField(max_length=1000)
-    identifier_type = models.CharField(max_length=1000)
-    description = MarkupField(markup_type='markdown')
+    name = models.CharField(max_length=255, help_text=help_text("""
+    If available, use the original title of the resource. Otherwise, create a
+    concise but descriptive title (e.g. "James Gregor obituary").
+    """))
 
+    source = models.CharField(max_length=1000, help_text=help_text("""
+    Name of the source (e.g. name of a newspaper, website).
+    """))
+
+    source_location = models.URLField(max_length=500, blank=True, null=True,
+                                      help_text=help_text("""
+    For online resources, this should be the location of the resource. For
+    archives, this should be a link to the finding aid, if available.
+    """))
+
+    identifier = models.CharField(max_length=1000, help_text=help_text("""
+    The unique identifier used to refer to the original resource. For archives,
+    this could be a collection/bundle/item identifier. For web resources, this
+    coud be the URL (i.e. same as source location).
+    """))
+
+    IDENTIFIER_TYPE_CHOICES = (
+        ('url', 'URL'),
+        ('uri', 'URI'),
+        ('archive', 'Archival identifier'),
+        ('catalog', 'Library catalog identifier'),
+        ('doi', 'DOI'),
+        ('handle', 'Handle'),
+        ('isbn', 'ISBN'),
+        ('issn', 'ISSN'),
+        ('other', 'Other')
+    )
+    identifier_type = models.CharField(choices=IDENTIFIER_TYPE_CHOICES,
+                                       max_length=1000)
+    description = MarkupField(markup_type='markdown', help_text=help_text("""
+    Depends on the resource type. To quote the original resource, use the
+    markdown blockquote, e.g. "&gt; Here is some quoted text".
+    """))
 
     class Meta:
         abstract = True
 
 
+class ExternalResource(Resource):
+    RESOURCE_TYPES = (
+        ('WB', 'Website'),
+        ('JO', 'Journal article'),
+        ('BK', 'Book'),
+        ('PE', 'Periodical article'),
+        ('DT', 'Dataset'),
+        ('AR', 'Archive'),
+        ('OT', 'Other'),
+    )
+    resource_type = models.CharField(max_length=2, choices=RESOURCE_TYPES)
+    created_original =  models.DateField(verbose_name='original creation date',
+                                         help_text=help_text("""
+    Date on which the original resource was created. For example, the
+    publication date of an article.
+    """))
+
+
 class Image(Resource):
-    image = models.FileField(upload_to='images/')
-    original_format = models.CharField(max_length=255)
+    image = models.FileField(upload_to='images/', null=True, blank=True,
+                             help_text=help_text("""
+    If appropriate, upload a digital copy of the image here."""))
+
+    remote = models.URLField(max_length=500, null=True, blank=True,
+                             help_text=help_text("""
+    If it is not possible to upload a copy of the image, enter the remote
+    location of the image here."""))
+
+    original_format = models.CharField(max_length=255, help_text=help_text("""
+    If possible, this should be a MIME-type (e.g. image/jpeg)."""))
+
+    @property
+    def location(self):
+        """
+
+        """
+        if self.image:
+            return self.image
+        return self.remote
+
+
+class Data(Resource):
+    FORMAT_CHOICES = (
+        ('csv', 'Comma-separated'),
+    )
+    data_format = models.CharField(max_length=3, choices=FORMAT_CHOICES)
+    location = models.CharField(max_length=500)
 
 
 class Post(Content):
@@ -97,6 +204,10 @@ class Post(Content):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)[:100]
         super(Post, self).save(*args, **kwargs)
+
+    @property
+    def title_condensed(self):
+        return self.title[:50] + u'...'
 
     def __unicode__(self):
         return self.title
@@ -186,9 +297,129 @@ class GenecologyUser(AbstractBaseUser, PermissionsMixin):
         return self.is_admin
 
 
+class RDFSchema(models.Model):
+    name = models.CharField(max_length=255)
+
+    namespace = models.CharField(max_length=255, blank=True, null=True)
+    uri = models.CharField(max_length=255, blank=True, null=True,
+                           verbose_name='URI')
+
+    def __unicode__(self):
+        return unicode(self.name)
+
+    class Meta:
+        verbose_name = 'RDF schema'
+        verbose_name_plural = 'RDF schemas'
+
+class RDFClass(models.Model):
+    """
+    """
+    label = models.CharField(max_length=255, blank=True, null=True)
+    identifier = models.CharField(max_length=255)
+    comment = models.TextField(blank=True)
+
+    subClassOf = models.ForeignKey('RDFClass', related_name='superClassOf', blank=True, null=True)
+
+    partOf = models.ForeignKey('RDFSchema', related_name='classes')
+
+    class Meta:
+        verbose_name = 'RDF class'
+        verbose_name_plural = 'RDF classes'
+
+    def __unicode__(self):
+        if self.label:
+            return self.label
+        return self.identifier
+
+
+class RDFProperty(models.Model):
+    """
+    """
+    label = models.CharField(max_length=255, blank=True, null=True)
+    identifier = models.CharField(max_length=255)
+    comment = models.TextField(blank=True)
+
+    subPropertyOf = models.ForeignKey('RDFProperty', related_name='superPropertyOf', blank=True, null=True)
+
+    domain = models.ForeignKey('RDFClass', related_name='in_domain_of', null=True, blank=True, verbose_name='domain')
+    range = models.ForeignKey('RDFClass', related_name='in_range_of', null=True, blank=True, verbose_name='range')
+
+    partOf = models.ForeignKey('RDFSchema', related_name='properties',
+                               verbose_name='part of')
+
+    class Meta:
+        verbose_name = 'RDF property'
+        verbose_name_plural = 'RDF properties'
+
+    def __unicode__(self):
+        if self.label:
+            return self.label
+        return self.identifier
+
+
+class Entity(models.Model):
+    """
+    An extention of :class:`.Concept` into RDF.
+    """
+    concept = models.OneToOneField(Concept, related_name='entity_instance')
+    instance_of = models.ForeignKey('RDFClass', related_name='instances')
+
+    class Meta:
+        verbose_name_plural = 'entities'
+
+    def __unicode__(self):
+        if self.concept.label:
+            return self.concept.label
+        return self.concept.uri
+
+    def is_a(self, rdfclass):
+        """
+        Evaluates whether this :class:`.Entity` is an instance of
+        the :class:`.RDFClass` instance ``rdfclass`` (including its
+        descendants).
+
+        TODO: implement this.
+        """
+        return
+
+
+class Property(models.Model):
+    concept = models.OneToOneField(Concept, related_name='property_instance',
+                                   blank=True, null=True)
+    instance_of = models.ForeignKey('RDFProperty', related_name='instances',
+                                    verbose_name='property type',
+                                    help_text=help_text("""
+    Each relation should have a formal type or property from a controlled
+    vocabulary. If you don't see an appropriate option here, we chould consider
+    loading additional vocabularies or, if absolutely necessary, creating our
+    own. **Important** be sure to select a relationship with the appropriate
+    domain and range! The domain should match the type of the "source" entity
+    (e.g. Person) and the range should match the type of the "target" entity.
+    """))
+    source = models.ForeignKey('Entity', related_name='properties_from')
+    target = models.ForeignKey('Entity', related_name='properties_onto')
+
+    class Meta:
+        verbose_name_plural = 'properties'
+
+    def __unicode__(self):
+        return self.instance_of.__unicode__()
+
+    def is_a(self, rdfproperty):
+        """
+        Evaluates whether this :class:`.Property` is an instance of
+        the :class:`.RDFPropery` instance ``rdfproperty`` (including its
+        descendants).
+
+        TODO: implement this.
+        """
+        return
+
+
 reversion.register(ContentRelation)
 reversion.register(Note)
 reversion.register(Tag)
 reversion.register(ConceptProfile)
 reversion.register(Image)
 reversion.register(Post)
+reversion.register(Data)
