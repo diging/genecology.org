@@ -1,0 +1,64 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 panel">
+            <div class="panel-heading">
+                <div class="h1">Topics</div>
+            </div>
+            <div class="panel-body">
+                {% for tag in tags %}
+                <div class="blog-post-summary">
+                    <a class="h3" href="{% url "tag" tag.id %}">{{ tag.title }}</a>
+                    <p>{{ tag.description }}</p>
+                    <div class="row">
+                        {% if tag.post_set.count > 0 %}
+                        <div class="col-sm-6">
+                            <div class="panel">
+                                <span class="h4 panel-heading">Recent posts</span>
+                                <ul class="list-group">
+                                    {% for post in tag.post_set.all %}
+                                    <a href="{% url "post" post.id %}" class="list-group-item">
+                                        <span class="h5">{{ post.title }}</span>
+                                        <div class="text-muted">{{ post.creator.full_name }} | {{ post.created }}</div>
+                                    </a>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if tag.note_set.count > 0 %}
+                        <div class="col-sm-6">
+                            <div class="panel">
+                                <span class="h4 panel-heading">Recent notes</span>
+                                <ul class="list-group">
+                                    {% for note in tag.note_set.all %}
+                                    <a href="{% url "note" note.id %}" class="list-group-item">
+                                        <span class="h5">{{ note.title }}</span>
+                                        <div class="text-muted">{{ note.creator.full_name }} | {{ note.created }}</div>
+                                    </a>
+
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-primary pull-right">
+                        <a href="{% url 'tag' tag.id %}">See more content with this tag</a>
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+{% endblock %}

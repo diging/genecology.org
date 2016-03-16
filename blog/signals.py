@@ -7,7 +7,7 @@ from blog.models import *
 ### Handle Concept and Type signals. ###
 
 @receiver(post_save, sender=Concept)
-def concept_post_save_receiver(sender, **kwargs):
+def concept_create_entity(sender, **kwargs):
     """
     When a :class:`.Concept` is saved, attempt to create a corresponding
     :class:`.Entity` instance.
@@ -34,6 +34,23 @@ def concept_post_save_receiver(sender, **kwargs):
             concept=instance,
             instance_of=RDFClass.objects.get(identifier='E1_CRM_Entity')
        ).save()
+
+
+@receiver(post_save, sender=Concept)
+def concept_create_profile(sender, **kwargs):
+    """
+    When a :class:`.Concept` is saved, attempt to create a corresponding
+    :class:`.Entity` instance.
+    """
+    instance = kwargs.get('instance', None)
+
+    try:
+        instance.profile
+        return
+    except:
+        pass
+
+    ConceptProfile(creator_id=1, concept=instance).save()
 
 
 @receiver(post_save, sender=Type)

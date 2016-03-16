@@ -185,6 +185,31 @@ class ContentRelationInline(GenericTabularInline):
     ct_fk_field = 'source_instance_id'
 
 
+class NoteAdmin(admin.ModelAdmin):
+    class Meta:
+        model = Note
+    # form = PostAdminForm
+
+    raw_id_fields = ('tags', 'about',)
+    exclude = ('slug', )
+    list_display = ('title', 'created', 'creator', )
+    autocomplete_lookup_fields = {
+        'm2m': ['tags', 'about'],
+    }
+
+    inlines = [ContentRelationInline]
+
+    def save_model(self, request, obj, form, change):
+        """
+        Set the current user as creator.
+        """
+        try:
+            obj.creator
+        except:
+            obj.creator = request.user
+        obj.save()
+
+
 class PostAdmin(admin.ModelAdmin):
     class Meta:
         model = Post
@@ -404,6 +429,7 @@ class EntityInline(admin.TabularInline):
 
 admin.site.register(GenecologyUser, GenecologyUserAdmin)
 admin.site.register(Post, PostAdmin)
+admin.site.register(Note, NoteAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(ContentRelation, ContentRelationAdmin)
 admin.site.register(ConceptProfile, ConceptProfileAdmin)

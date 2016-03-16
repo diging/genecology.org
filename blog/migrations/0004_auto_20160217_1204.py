@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
                 ('description_markup_type', models.CharField(choices=[(b'', b'--'), (b'markdown', b'markdown')], default='markdown', editable=False, max_length=30)),
                 ('_description_rendered', models.TextField(editable=False)),
                 ('about', models.ManyToManyField(blank=True, to='concepts.Concept')),
-                ('concept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='concepts.Concept')),
+                ('concept', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='concepts.Concept')),
                 ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('tags', models.ManyToManyField(blank=True, to='blog.Tag')),
             ],
@@ -77,6 +77,7 @@ class Migration(migrations.Migration):
             name='Note',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(max_length=255)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('slug', models.SlugField(blank=True, max_length=100)),

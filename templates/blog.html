@@ -5,22 +5,9 @@
 {% block content %}
 
 <div class="container">
-    <div class="jumbotron">
-        <div class="row">
-            <div class="col-sm-5">
-                <img class="img-responsive center-block" src="{% static 'images/logo_compressed.png' %}"/>
-            </div>
-            <div class="col-sm-7">
-                <h2 class="text-right">A data-driven history of <span class="text-orange">ecological genetics</span> in Britain.</h2>
-                <p class="pull-right"><a class="btn btn-primary btn-lg" data-toggle="modal" data-target="#infoModal">Learn more</a></p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container">
     <div class="row">
         <div class="col-sm-8">
+            <div class="h1">The Blog</div>
             {% for post in posts %}
             <div class="blog-post-summary">
                 <h3>{{ post.title }}</h3>
@@ -40,18 +27,7 @@
 
         </div>
         <div class="col-sm-4">
-            <div class="panel">
-                <div class="panel-body">
-                    <a {% if image.about.count > 0 %}href="{% url "conceptprofile" image.about.first.profile.id %}"{% endif %}
-                        data-toggle="tooltip"
-                        data-placement="left"
-                        data-html="true"
-                        data-container="body"
-                        title="<span class='h4'>{{ image.name }}</span><p>{{image.description}}</p>">
-                        <img class="img img-responsive img-thumbnail" src="{{image.location}}" />
-                    </a>
-                </div>
-            </div>
+
             <div class="panel">
                 <div class="panel-heading">
                     <h4>Topics</h4>

@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-sm-8">
 
-            <h2>Search Posts: <mark>{{ query }}</mark></h2>
+            <h2>Search content: <mark>{{ query }}</mark></h2>
 
 
                 {% if query %}
@@ -16,7 +16,7 @@
 
                 {% for result in page.object_list %}
                 <div class="blog-post-summary">
-                    <h3><a href="{% url 'post' result.object.id %}">{{ result.title }}</a></h3>
+                    <h3><span class="label label-primary">{{ result.type }}</span> <a href="{{ result.link }}">{{ result.title }}</a></h3>
                     <p class="text-muted">{{ result.creator }} | {{ result.created }}</p>
                     <p>{% highlight result.text with query html_tag "mark" %}</p>
 

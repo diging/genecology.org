@@ -99,9 +99,40 @@ def home(request):
     context.update({
         'posts': Post.objects.filter(published=True).order_by('-created'),
         'tags': Tag.objects.all(),
-        'active': 'blog',
+        'active': 'home',
+        'image': Image.objects.order_by('?').first()
     })
     return render(request, 'home.html', context)
+
+
+def blog(request):
+    context = get_default_context()
+    context.update({
+        'posts': Post.objects.filter(published=True).order_by('-created'),
+        'tags': Tag.objects.all(),
+        'active': 'blog',
+    })
+    return render(request, 'blog.html', context)
+
+
+def notes(request):
+    context = get_default_context()
+    context.update({
+        'notes': Note.objects.all().order_by('-created'),
+        'tags': Tag.objects.all(),
+        'active': 'notes',
+    })
+    return render(request, 'notes.html', context)
+
+
+def topics(request):
+    context = get_default_context()
+    context.update({
+        'tags': Tag.objects.all(),
+        'active': 'topics',
+    })
+    return render(request, 'tags.html', context)
+
 
 
 def datum(request, data_id):
@@ -157,6 +188,44 @@ def post(request, post_id):
     return render(request, 'post.html', context)
 
 
+def note(request, note_id):
+    """
+    Display the content of a :class:`.Post`\.
+    """
+
+
+    note = get_object_or_404(Note, pk=note_id)
+
+    available_versions = reversion.get_for_object(note)
+    versions = get_version_data(available_versions)
+
+    date, body, subtitle = available_versions[0].revision.date_created, note.content, None
+    version_id = request.GET.get('version', None)
+
+    if version_id and int(version_id) != available_versions[0].revision_id:
+        version = available_versions.get(revision_id=version_id)
+        note = version.object_version.object
+        date = version.revision.date_created
+        subtitle = 'Historical version %s' % version_id
+        body = mark_safe(generate_patch_html(version, available_versions[0], 'content'))
+
+    if not (request.user.is_staff or post.published):
+        return HttpResponseNotFound("<h1>Note not found.</h1>")
+
+    context = get_default_context()
+    context.update({
+        'note': note,
+        'subtitle': subtitle,
+        'date': date,
+        'active': 'notes',
+        'versions': versions,
+        'type': 'note',
+        'title': note.title,
+        'body': body,
+    })
+    return render(request, 'note.html', context)
+
+
 def post_rest_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     serializer = PostDetailSerializer(post)
@@ -192,7 +261,7 @@ def tag(request, tag_id):
         'title': tag.title,
         'type': 'tag',
         'posts': tag.post_set.filter(published=True).order_by('-created'),
-        'active': 'blog',
+        'active': 'topics',
         'versions': versions,
         'subtitle': subtitle,
         'body': body,
@@ -233,14 +302,14 @@ def conceptprofile(request, profile_id):
     return render(request, 'conceptprofile.html', context)
 
 
-def conceptprofiles(request, queryset, typed=''):
+def conceptprofiles(request, queryset, typed='', body=''):
     context = get_default_context()
     context.update({
         'profiles': queryset,
         'title': typed.title(),
         'subtitle': None,
-        'body': 'Describe',
-        'active': '',
+        'body': body,
+        'active': 'profiles',
         'type': typed,
     })
     return render(request, 'conceptprofiles.html', context)
@@ -252,24 +321,52 @@ def people(request):
     :class:`concepts.Type` E21 Person.
     """
     queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Person'])
-    return conceptprofiles(request, queryset, 'people')
+    body = help_text("""
+        Use the search interface below to find profiles about significant people
+        in the history of evolutionary ecology. Profiles are automatically
+        generated for people as we generate content related to them (e.g. blog
+        posts, notes). As we learn more about these people, we will add
+        biographical descriptions. If you know something about one of the people
+        in this system, please let us know!""")
+    return conceptprofiles(request, queryset, 'people', body)
 
 
 def institutions(request):
     """
     """
+    body = help_text("""
+        Use the search interface below to find profiles about institutions
+        related to the history of evolutionary ecology. Profiles are
+        automatically generated for institutions as we generate content related
+        to them (e.g. blog posts, notes). As we learn more about these
+        institutions, we will add additional descriptions. If you know something
+        about one of the institutions in this system, please let us know!""")
     queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Institution'])
-    return conceptprofiles(request, queryset, 'institutions')
+    return conceptprofiles(request, queryset, 'institutions', body)
 
 
 def organisms(request):
+    body = help_text("""
+        Use the search interface below to find profiles about organisms
+        related to the history of evolutionary ecology. Profiles are
+        automatically generated for organisms as we generate content related
+        to them (e.g. blog posts, notes). As we learn more about these
+        organisms, we will add additional descriptions. If you know something
+        about one of the organims in this system, please let us know!""")
     queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Organism'])
-    return conceptprofiles(request, queryset, 'organisms')
+    return conceptprofiles(request, queryset, 'organisms', body)
 
 
 def places(request):
+    body = help_text("""
+        Use the search interface below to find profiles about places
+        related to the history of evolutionary ecology. Profiles are
+        automatically generated for places as we generate content related
+        to them (e.g. blog posts, notes). As we learn more about these
+        places, we will add additional descriptions. If you know something
+        about one of the places in this system, please let us know!""")
     queryset = ConceptProfile.objects.filter(concept__typed__uri=settings.CONCEPT_TYPES['Place'])
-    return conceptprofiles(request, queryset, 'places')
+    return conceptprofiles(request, queryset, 'places', body)
 
 
 def about(request):

@@ -15,6 +15,7 @@ from concepts.models import Concept, Type
 from reversion import revisions as reversion
 
 import re
+import bleach
 
 
 def help_text(s):
@@ -86,12 +87,17 @@ class Content(models.Model):
 class Note(Content):
     """
     """
-
+    title = models.CharField(max_length=255)
     content = MarkupField(markup_type='markdown')
+
+    @property
+    def summary(self):
+        content = self._content_rendered[:200] + u'...'
+        return bleach.clean(content, tags=[], strip=True).replace('\n', ' ')
 
 
 class ConceptProfile(Content):
-    concept = models.ForeignKey(Concept, related_name='profile')
+    concept = models.OneToOneField(Concept, related_name='profile')
     summary = MarkupField(markup_type='markdown')
     description = MarkupField(markup_type='markdown')
 
