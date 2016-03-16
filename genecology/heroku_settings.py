@@ -39,10 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'haystack',
     'concepts',
     'blog',
     'markupfield',
+    'reversion',
+    'crispy_forms',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -54,6 +57,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'reversion.middleware.RevisionMiddleware',
 ]
 
 ROOT_URLCONF = 'genecology.urls'
@@ -156,4 +160,19 @@ GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS= {
     "concepts": {
         "concept": ("id__iexact", "label__startswith", "uri__iexact"),
     }
+}
+
+CONCEPT_TYPES = {
+    'Person': 'http://www.digitalhps.org/types/TYPE_986a7cc9-c0c1-4720-b344-853f08c136ab',    # E21 Person.
+    'Organism': 'http://www.digitalhps.org/types/TYPE_01054126-b6ec-4d31-9b7f-7bc6738eb79a',  # E20 Biological Object.
+    'Place': 'http://www.digitalhps.org/types/TYPE_dfc95f97-f128-42ae-b54c-ee40333eae8c',     # E53 Place.
+    'Document': 'http://www.digitalhps.org/types/TYPE_870bbf70-ef89-4574-b4ad-decebc80a177',  # E31 Document.
+    'Institution': 'http://www.digitalhps.org/types/TYPE_c284695b-e2c2-4c59-b7a3-3f84d4a98c89',    # E72 Legal Object.
+}
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
