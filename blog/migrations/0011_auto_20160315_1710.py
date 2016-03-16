@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('label', models.CharField(blank=True, max_length=255, null=True)),
                 ('identifier', models.CharField(max_length=255)),
-                ('comment', models.TextField(blank=True)),
+                ('comment', models.TextField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('label', models.CharField(blank=True, max_length=255, null=True)),
                 ('identifier', models.CharField(max_length=255)),
-                ('comment', models.TextField(blank=True)),
+                ('comment', models.TextField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(

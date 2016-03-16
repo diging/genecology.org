@@ -10,7 +10,7 @@ from blog.schema import *
 
 
 def load_cidoc_crm(apps, schema_editor):
-    import_schema('http://www.cidoc-crm.org/rdfs/cidoc_crm_v5.0.4_official_release.rdfs', 'CIDOC CRM 5.0.4')
+    import_schema('http://www.cidoc-crm.org/rdfs/cidoc_crm_v6.0-draft-2015January.rdfs', 'CIDOC CRM 6.0')
 
 
 def delete_cidoc_crm(apps, schema_editor):
@@ -66,8 +66,12 @@ class Migration(migrations.Migration):
             name='Entity',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('concept', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='entity_instance', to='concepts.Concept')),
+                ('label', models.CharField(max_length=255)),
+                ('concept', models.OneToOneField(null=True, blank=True, on_delete=django.db.models.deletion.CASCADE, related_name='entity_instance', to='concepts.Concept')),
                 ('instance_of', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='instances', to='blog.RDFClass')),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('updated', models.DateTimeField(auto_now=True)),
+                ('creator', models.ForeignKey(null=True, blank=True, on_delete=django.db.models.deletion.CASCADE, related_name='entities', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'verbose_name_plural': 'entities',
@@ -81,6 +85,9 @@ class Migration(migrations.Migration):
                 ('instance_of', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='instances', to='blog.RDFProperty')),
                 ('source', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='properties_from', to='blog.Entity')),
                 ('target', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='properties_onto', to='blog.Entity')),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('updated', models.DateTimeField(auto_now=True)),
+                ('creator', models.ForeignKey(null=True, blank=True, on_delete=django.db.models.deletion.CASCADE, related_name='properties', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'verbose_name_plural': 'properties',

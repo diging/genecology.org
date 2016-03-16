@@ -188,6 +188,10 @@ class Data(Resource):
     data_format = models.CharField(max_length=3, choices=FORMAT_CHOICES)
     location = models.CharField(max_length=500)
 
+    class Meta:
+        verbose_name = 'datum'
+        verbose_name_plural = 'data'
+
 
 class Post(Content):
     """
@@ -316,7 +320,7 @@ class RDFClass(models.Model):
     """
     label = models.CharField(max_length=255, blank=True, null=True)
     identifier = models.CharField(max_length=255)
-    comment = models.TextField(blank=True)
+    comment = models.TextField(blank=True, null=True)
 
     subClassOf = models.ForeignKey('RDFClass', related_name='superClassOf', blank=True, null=True)
 
@@ -337,7 +341,7 @@ class RDFProperty(models.Model):
     """
     label = models.CharField(max_length=255, blank=True, null=True)
     identifier = models.CharField(max_length=255)
-    comment = models.TextField(blank=True)
+    comment = models.TextField(blank=True, null=True)
 
     subPropertyOf = models.ForeignKey('RDFProperty', related_name='superPropertyOf', blank=True, null=True)
 
@@ -359,31 +363,42 @@ class RDFProperty(models.Model):
 
 class Entity(models.Model):
     """
-    An extention of :class:`.Concept` into RDF.
     """
-    concept = models.OneToOneField(Concept, related_name='entity_instance')
+    creator = models.ForeignKey('GenecologyUser', null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+
+    label = models.CharField(max_length=255)
+    concept = models.OneToOneField(Concept, null=True, blank=True, related_name='entity_instance')
     instance_of = models.ForeignKey('RDFClass', related_name='instances')
 
     class Meta:
         verbose_name_plural = 'entities'
 
     def __unicode__(self):
-        if self.concept.label:
-            return self.concept.label
-        return self.concept.uri
+        return self.label
 
-    def is_a(self, rdfclass):
+    def is_a(self, target_class):
         """
         Evaluates whether this :class:`.Entity` is an instance of
-        the :class:`.RDFClass` instance ``rdfclass`` (including its
+        the :class:`.RDFClass` instance ``target_class`` (including its
         descendants).
-
-        TODO: implement this.
         """
-        return
+
+        def traverse_up(rdf_class):     # Collects all ancestor RDFClasses.
+            if rdf_class.subClassOf:
+                return [rdf_class] + traverse_up(rdf_class.subClassOf)
+            return [rdf_class]    # Reached the highest level of the lineage.
+
+        return target_class in traverse_up(self.instance_of)
 
 
 class Property(models.Model):
+    creator = models.ForeignKey('GenecologyUser', null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     concept = models.OneToOneField(Concept, related_name='property_instance',
                                    blank=True, null=True)
     instance_of = models.ForeignKey('RDFProperty', related_name='instances',

@@ -140,9 +140,9 @@ def import_schema(schema_url, schema_name):
         identifier = _identifier(property_ref)
 
         # We prefer to use the description, but comment is fine, too.
-        comment = _get_object(g, class_ref, DESCRIPTION)
+        comment = _get_object(g, property_ref, DESCRIPTION)
         if not comment:
-            comment = _get_object(g, class_ref, COMMENT)
+            comment = _get_object(g, property_ref, COMMENT)
 
         kwargs = {
             'identifier': identifier,
@@ -162,8 +162,9 @@ def import_schema(schema_url, schema_name):
             range_ref = _get_object(g, property_ref, RANGE)
             rclass = classesHash[_identifier(range_ref)]
         except KeyError:
-            rclass = RDFClass(identifier=_identifier(range_ref), partOf=schema)
-            rclass.save()
+            rclass = RDFClass.objects.get_or_create(
+                        identifier=_identifier(range_ref),
+                        defaults={'partOf': schema})[0]
         instance.range = rclass
         instance.save()
         propertiesHash[identifier] = instance

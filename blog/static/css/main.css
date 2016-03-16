@@ -146,7 +146,7 @@ transition-delay:.2s;
 }
 
 .table-data > tbody {
-    
+
 }
 
 .table-data > tbody > tr > td {
@@ -167,4 +167,16 @@ transition-delay:.2s;
 
 .data-row-highlight {
     background: rgba(255, 165, 0, 0.5);
+}
+
+
+
+.rdf-instance {
+    cursor: pointer;
+}
+
+
+.tooltip-inner {
+    max-width: 600px;
+
 }
