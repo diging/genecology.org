@@ -145,8 +145,9 @@ AUTH_USER_MODEL = 'blog.GenecologyUser'
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': os.environ.get('SEARCHBOX_URL'),
+        'INDEX_NAME': 'haystack',
     },
 }
 
