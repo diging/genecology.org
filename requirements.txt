@@ -11,7 +11,7 @@ django-crispy-forms==1.6.0
 django-filter==0.13.0
 django-grappelli==2.7.3
 django-gunicorn==0.1.1
-django-haystack==2.5.dev0
+git+git://github.com/django-haystack/django-haystack.git#egg=django-haystack
 django-markupfield==1.4.0
 django-reversion==1.10.1
 djangorestframework==3.3.3
