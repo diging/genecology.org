@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 
 optional = { 'blank': True, 'null': True }
+
 
 class HeritableObject(models.Model):
     """
@@ -33,6 +35,7 @@ class HeritableObject(models.Model):
     class Meta:
         abstract = True
 
+
 class Concept(HeritableObject):
     uri = models.CharField(max_length=255, unique=True)
     resolved = models.BooleanField(default=False)
@@ -51,6 +54,10 @@ class Concept(HeritableObject):
         (RESOLVED,'Resolved'),
     )
     concept_state=models.CharField(max_length=10,choices=concept_state_choices, default='Pending')
+
+    def get_absolute_url(self):
+        return reverse('conceptprofile', args=(self.entity_instance.id,))
+
 
 class Type(Concept):
     pass

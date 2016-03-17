@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
 from django.utils.text import slugify
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 
 from markupfield.fields import MarkupField
 
@@ -99,6 +100,12 @@ class Note(Content):
     def content_clean(self):
         return bleach.clean(self.content, tags=[], strip=True)
 
+    def __unicode__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse('note', args=(self.id,))
+
 
 class ConceptProfile(Content):
     concept = models.OneToOneField(Concept, related_name='profile')
@@ -108,6 +115,9 @@ class ConceptProfile(Content):
     @property
     def description_clean(self):
         return bleach.clean(self.description, tags=[], strip=True)
+
+    def get_absolute_url(self):
+        return reverse('conceptprofile', args=(self.id,))
 
 
 class Resource(Content):
@@ -153,6 +163,9 @@ class Resource(Content):
     class Meta:
         abstract = True
 
+    def __unicode__(self):
+        return self.name
+
 
 class ExternalResource(Resource):
     RESOURCE_TYPES = (
@@ -170,6 +183,12 @@ class ExternalResource(Resource):
     Date on which the original resource was created. For example, the
     publication date of an article.
     """))
+
+    def get_absolute_url(self):
+        """
+        TODO: implement this once we have an ExternalResource view.
+        """
+        return ''
 
 
 class Image(Resource):
@@ -230,6 +249,10 @@ class Post(Content):
     @property
     def body_clean(self):
         return bleach.clean(self.body, tags=[], strip=True)
+
+    @property
+    def description(self):
+        return bleach.clean(self.summary, tags=[], strip=True)
 
     def __unicode__(self):
         return self.title
