@@ -36,7 +36,14 @@
                         {% if profile.concept.image_set.count > 0 %}
                         {% with profile.concept.image_set.first as image %}
                         <figure class="figure">
-                            <img src="{{ image.location }}" class="figure-img img-fluid img-thumbnail" >
+                            <a {% if image.about.count > 0 %}href="{% url "conceptprofile" image.about.first.profile.id %}"{% endif %}
+                                data-toggle="tooltip"
+                                data-placement="left"
+                                data-html="true"
+                                data-container="body"
+                                title="<span class='h4'>{{ image.name }}</span><p>{{image.description}}</p>">
+                                <img src="{{ image.location }}" class="figure-img img-fluid img-thumbnail" >
+                            </a>
                             <p class="figure-caption text-right text-muted">Source: {% if image.source_location %}<a href="{{image.source_location}}">{% endif %}{{image.source}}{% if image.source_location %}</a>{% endif %}</p>
                         </figure>
                         {% endwith %}
