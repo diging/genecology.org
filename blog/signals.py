@@ -46,6 +46,9 @@ def concept_create_profile(sender, **kwargs):
 
     try:
         instance.profile
+        if not instance.entity_instance.label and instance.label:
+            instance.entity_instance.label = instance.label
+            instance.entity_instance.save()
         return
     except:
         pass
@@ -63,6 +66,9 @@ def type_post_save_receiver(sender, **kwargs):
 
     try:
         instance.entity_instance
+        if not instance.entity_instance.label and instance.label:
+            instance.entity_instance.label = instance.label
+            instance.entity_instance.save()
         return
     except:
         pass

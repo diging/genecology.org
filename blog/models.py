@@ -387,7 +387,7 @@ class Entity(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
 
-    label = models.CharField(max_length=255)
+    label = models.CharField(max_length=255, blank=True, null=True)
     concept = models.OneToOneField(Concept, null=True, blank=True, related_name='entity_instance')
     instance_of = models.ForeignKey('RDFClass', related_name='instances')
 
