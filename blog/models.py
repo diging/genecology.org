@@ -17,6 +17,7 @@ from reversion import revisions as reversion
 
 import re
 import bleach
+import datetime
 
 
 def help_text(s):
@@ -63,7 +64,7 @@ class Content(models.Model):
         abstract = True
 
     creator = models.ForeignKey('GenecologyUser')
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
 
     about = models.ManyToManyField(Concept, blank=True)
@@ -83,6 +84,11 @@ class Content(models.Model):
 
     instance_of = models.ForeignKey('RDFClass',
                                     blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.created:
+            self.created = datetime.datetime.now()
+        super(Content, self).save(*args, **kwargs)
 
 
 class Note(Content):

@@ -50,9 +50,25 @@ class PostAdminForm(forms.ModelForm):
             'about',
             'tags',
             'title',
+            'created',
             'published',
             'summary',
             'body',
+            'commit_message'
+        )
+
+
+class NoteAdminForm(forms.ModelForm):
+    commit_message = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        model = Note
+        fields = (
+            'about',
+            'tags',
+            'title',
+            'created',
+            'content',
             'commit_message'
         )
 
@@ -189,7 +205,7 @@ class ContentRelationInline(GenericTabularInline):
 class NoteAdmin(admin.ModelAdmin):
     class Meta:
         model = Note
-    # form = PostAdminForm
+    form = NoteAdminForm
 
     raw_id_fields = ('tags', 'about',)
     exclude = ('slug', )
