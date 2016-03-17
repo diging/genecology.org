@@ -50,6 +50,7 @@
                         title="<span class='h4'>{{ image.name }}</span><p>{{image.description}}</p>">
                         <img class="img img-responsive img-thumbnail" src="{{image.location}}" />
                     </a>
+                    <p class="figure-caption text-right text-muted">Source: {% if image.source_location %}<a href="{{image.source_location}}">{% endif %}{{image.source}}{% if image.source_location %}</a>{% endif %}</p>
                 </div>
             </div>
             <div class="panel">
