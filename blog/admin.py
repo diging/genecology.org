@@ -80,6 +80,7 @@ class ExternalResourceAdminForm(forms.ModelForm):
             'tags',
             'name',
             'resource_type',
+            'created_original',
             'source',
             'source_location',
             'identifier',
