@@ -28,6 +28,8 @@
 
             <div>{{ body }}</div>
 
+        </div>
+        <div class="col-sm-4">
             {% if note.relations_to.count > 0 or note.relations_from.count > 0 %}
             <div class="panel">
                 <div class="panel-heading">
@@ -67,8 +69,6 @@
                 </ul>
             </div>
             {% endif %}
-        </div>
-        <div class="col-sm-4">
         </div>
     </div>
 </div>
