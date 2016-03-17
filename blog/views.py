@@ -13,8 +13,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import mixins
 from rest_framework import generics
 
-from haystack.views import FacetedSearchView
-from haystack.query import EmptySearchQuerySet
+from haystack.generic_views import FacetedSearchView
+from haystack.query import EmptySearchQuerySet, SearchQuerySet
 from haystack.forms import FacetedSearchForm
 
 from reversion.helpers import generate_patch_html
@@ -25,6 +25,7 @@ from concepts.authorities import get_namespace, get_by_namespace
 
 import urllib2 as urllib
 import csv
+import datetime
 
 
 ## Helper functions start here.
@@ -134,14 +135,12 @@ def topics(request):
     return render(request, 'tags.html', context)
 
 
-
 def datum(request, data_id):
     data_object = get_object_or_404(Data, pk=data_id)
     response = urllib.urlopen(data_object.location)
     reader = csv.reader(response)
 
     content = [[detect_uri(cell) for cell in row] for row in reader]
-
 
     context = get_default_context()
     context.update({
@@ -150,7 +149,6 @@ def datum(request, data_id):
         'data_object': data_object,
     })
     return render(request, 'csv.html', context)
-
 
 
 def post(request, post_id):
@@ -423,8 +421,20 @@ class PostFacetedSearchForm(FacetedSearchForm):
     q = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
 
+
 class PostSearchView(FacetedSearchView):
     """
     Provides the blog :class:`.Post` search views.
     """
-    pass
+    queryset = SearchQuerySet().date_facet('created', start_date=datetime.date(2016,01,01), end_date=datetime.date(2020,01,01), gap_by='day')
+    results_per_page = 20
+    form_class = PostFacetedSearchForm
+    template_name = "search/search.html"
+
+    facet_fields = ('creator', 'created', 'type')
+
+    def get_queryset(self):
+        return super(PostSearchView, self).get_queryset()
+
+    def get_context_data(self, *args, **kwargs):
+        return super(PostSearchView, self).get_context_data(*args, **kwargs)

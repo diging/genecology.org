@@ -95,11 +95,19 @@ class Note(Content):
         content = self._content_rendered[:200] + u'...'
         return bleach.clean(content, tags=[], strip=True).replace('\n', ' ')
 
+    @property
+    def content_clean(self):
+        return bleach.clean(self.content, tags=[], strip=True)
+
 
 class ConceptProfile(Content):
     concept = models.OneToOneField(Concept, related_name='profile')
     summary = MarkupField(markup_type='markdown')
     description = MarkupField(markup_type='markdown')
+
+    @property
+    def description_clean(self):
+        return bleach.clean(self.description, tags=[], strip=True)
 
 
 class Resource(Content):
@@ -218,6 +226,10 @@ class Post(Content):
     @property
     def title_condensed(self):
         return self.title[:50] + u'...'
+
+    @property
+    def body_clean(self):
+        return bleach.clean(self.body, tags=[], strip=True)
 
     def __unicode__(self):
         return self.title

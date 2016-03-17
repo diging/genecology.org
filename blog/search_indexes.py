@@ -3,14 +3,15 @@ from django.core.urlresolvers import reverse
 import datetime
 from haystack import indexes
 from models import *
+import bleach
 
 
 class PostIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     title = indexes.CharField(model_attr='title')
-    creator = indexes.CharField(model_attr='creator')
-    created = indexes.DateTimeField(model_attr='created')
-    type = indexes.CharField()
+    creator = indexes.CharField(model_attr='creator', faceted=True)
+    created = indexes.DateTimeField(model_attr='created', faceted=True)
+    type = indexes.CharField(faceted=True)
     link = indexes.CharField()
 
     def get_model(self):
@@ -32,9 +33,9 @@ class PostIndex(indexes.SearchIndex, indexes.Indexable):
 class NoteIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     title = indexes.CharField(model_attr='title')
-    creator = indexes.CharField(model_attr='creator')
-    created = indexes.DateTimeField(model_attr='created')
-    type = indexes.CharField()
+    creator = indexes.CharField(model_attr='creator', faceted=True)
+    created = indexes.DateTimeField(model_attr='created', faceted=True)
+    type = indexes.CharField(faceted=True)
     link = indexes.CharField()
 
     def get_model(self):
@@ -56,9 +57,9 @@ class NoteIndex(indexes.SearchIndex, indexes.Indexable):
 class ConceptProfileIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
     title = indexes.CharField(model_attr='concept')
-    creator = indexes.CharField(model_attr='creator')
-    created = indexes.DateTimeField(model_attr='created')
-    type = indexes.CharField()
+    creator = indexes.CharField(model_attr='creator', faceted=True)
+    created = indexes.DateTimeField(model_attr='created', faceted=True)
+    type = indexes.CharField(faceted=True)
     link = indexes.CharField()
 
     def get_model(self):

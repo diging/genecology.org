@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 import markdown
+from urlparse import urlparse
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -144,10 +145,21 @@ MARKUP_FIELD_TYPES = (
 
 AUTH_USER_MODEL = 'blog.GenecologyUser'
 
+# HAYSTACK_CONNECTIONS = {
+#     'default': {
+#         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+#         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+#     },
+# }
+
+
+es = urlparse(os.environ.get('SEARCHBOX_URL') or 'http://127.0.0.1:9200/')
+port = es.port or 80
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': es.scheme + '://' + es.hostname + ':' + str(port),
+        'INDEX_NAME': 'documents',
     },
 }
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"

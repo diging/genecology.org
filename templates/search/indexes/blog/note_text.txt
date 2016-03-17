@@ -1,5 +1,5 @@
 {{ object.title }}
-{{ object.content }}
+{{ object.content_clean }}
 {% for concept in object.about.all %}
 {{ concept.label }}
 {% endfor %}

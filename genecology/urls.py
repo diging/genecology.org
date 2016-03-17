@@ -18,12 +18,11 @@ from django.contrib import admin
 
 
 from haystack.views import FacetedSearchView
-from haystack.query import SearchQuerySet
+
 
 from blog import views as blog_views
 from blog import api
 
-sqs = SearchQuerySet().facet('creator', size=100)
 
 
 urlpatterns = [
@@ -51,7 +50,7 @@ urlpatterns = [
     url(r'^post/(?P<post_id>[0-9]+)[/]?.json$', blog_views.post_rest_detail, name='post_rest_detail'),
     url(r'^topic/(?P<tag_id>[0-9]+)/$', blog_views.tag, name='tag'),
     url(r'^topic/(?P<tag_id>[0-9]+)[/]?.json$', blog_views.tag_rest_detail, name='tag_rest_detail'),
-    url(r'^search/', blog_views.PostSearchView(form_class=blog_views.PostFacetedSearchForm, searchqueryset=sqs), name='search'),
+    url(r'^search/', blog_views.PostSearchView.as_view(), name='search'),
     url(r'^admin/', admin.site.urls),
     url(r'^grappelli/', include('grappelli.urls')),
 
