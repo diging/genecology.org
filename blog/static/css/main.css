@@ -180,3 +180,9 @@ transition-delay:.2s;
     max-width: 600px;
 
 }
+
+blockquote {
+    font-size: 10pt;
+    font-style: italic;
+    color: #656565;
+}
