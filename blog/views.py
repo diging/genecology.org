@@ -13,9 +13,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import mixins
 from rest_framework import generics
 
-from haystack.generic_views import FacetedSearchView
+from haystack.generic_views import SearchView
 from haystack.query import EmptySearchQuerySet, SearchQuerySet
-from haystack.forms import FacetedSearchForm
+from haystack.forms import SearchForm
 
 from reversion.helpers import generate_patch_html
 
@@ -73,7 +73,7 @@ def get_default_context():
     """
     Generate context used in most/all views.
     """
-    return {'form': PostFacetedSearchForm}
+    return {'form': PostSearchForm}
 
 
 def get_version_data(available_versions):
@@ -414,24 +414,24 @@ def team(request):
 ## Search.
 
 
-class PostFacetedSearchForm(FacetedSearchForm):
+class PostSearchForm(SearchForm):
     """
     Form for searching blog :class:`.Post`\s.
     """
-    q = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    q = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
 
 
-class PostSearchView(FacetedSearchView):
+class PostSearchView(SearchView):
     """
     Provides the blog :class:`.Post` search views.
     """
-    queryset = SearchQuerySet().date_facet('created', start_date=datetime.date(2016,01,01), end_date=datetime.date(2020,01,01), gap_by='day')
+    queryset = SearchQuerySet()
     results_per_page = 20
-    form_class = PostFacetedSearchForm
+    form_class = PostSearchForm
     template_name = "search/search.html"
 
-    facet_fields = ('creator', 'created', 'type')
+    # facet_fields = ('creator', 'created', 'type')
 
     def get_queryset(self):
         return super(PostSearchView, self).get_queryset()
