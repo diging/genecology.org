@@ -283,6 +283,11 @@ def conceptprofile(request, profile_id):
     body = profile.description
     subtitle = None
 
+    conceptType = ContentType.objects.get_for_model(Concept)
+
+    relations_to = ContentRelation.objects.filter(target_content_type_id=conceptType.id, target_instance_id=profile.concept.id)
+    relations_from = ContentRelation.objects.filter(source_content_type_id=conceptType.id, source_instance_id=profile.concept.id)
+
     if version_id and int(version_id) != available_versions[0].revision_id:
         version = available_versions.get(revision_id=version_id)
         profile = version.object_version.object
@@ -296,6 +301,8 @@ def conceptprofile(request, profile_id):
         'active': '',
         'versions': versions,
         'subtitle': subtitle,
+        'relations_from': relations_from,
+        'relations_to': relations_to
     })
     return render(request, 'conceptprofile.html', context)
 
