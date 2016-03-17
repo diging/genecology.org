@@ -35,10 +35,12 @@
                         <a  href="{{ relation.source.get_absolute_url }}"
                             class="label label-primary"
                             data-toggle="tooltip"
+                            data-html="true"
                             title="{{ relation.source.description }}"
                             data-placement="top">{{ relation.source }}</a>
                         <a  class="label label-default"
                             data-toggle="tooltip"
+                            data-html="true"
                             title="{{ relation.instance_of.comment }}"
                             data-placement="top">{{ relation.name }} ({{ relation.instance_of }})</a>
                         <a class="label label-warning">this post</a>
@@ -50,11 +52,13 @@
                         <a class="label label-warning">this post</a>
                         <a  class="label label-default"
                             data-toggle="tooltip"
+                            data-html="true"
                             title="{{ relation.instance_of.comment }}"
                             data-placement="top">{{ relation.name }} ({{ relation.instance_of }})</a>
                         <a href="{{ relation.target.get_absolute_url }}"
                             class="label label-primary"
                             data-toggle="tooltip"
+                            data-html="true"
                             title="{{ relation.target.description }}"
                             data-placement="top">{{ relation.target }}</a>
                         <div class="text text-info">{{ relation.description }}</div>
