@@ -178,7 +178,7 @@ CONCEPT_TYPES = {
     'Organism': 'http://www.digitalhps.org/types/TYPE_01054126-b6ec-4d31-9b7f-7bc6738eb79a',  # E20 Biological Object.
     'Place': 'http://www.digitalhps.org/types/TYPE_dfc95f97-f128-42ae-b54c-ee40333eae8c',     # E53 Place.
     'Document': 'http://www.digitalhps.org/types/TYPE_870bbf70-ef89-4574-b4ad-decebc80a177',  # E31 Document.
-    'Institution': 'http://www.digitalhps.org/types/TYPE_c284695b-e2c2-4c59-b7a3-3f84d4a98c89',    # E72 Legal Object.
+    'Institution': 'http://www.digitalhps.org/types/TYPE_3fc436d0-26e7-472c-94de-0b712b66b3f3',    # E40 Legal Body.
 }
 
 
