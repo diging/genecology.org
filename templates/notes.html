@@ -15,7 +15,7 @@
             </p>
             {% for note in notes %}
             <div class="blog-post-summary">
-                <h3>{{ note.title }}</h3>
+                <h3><a href="{% url 'note' note.id %}">{{ note.title }}</a></h3>
                 <p class="text-muted">{{ note.creator.full_name }} | {{ note.created }}</p>
                 <p>{{ note.summary }}</p>
                 <div>
