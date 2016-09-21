@@ -1,0 +1,30 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+<div class="container">
+    <ul class="list-group">
+        {% for notebook in notebooks %}
+        <li class="list-group-item">
+            <span class="btn-group">
+            {% if notebook.external_notebook  %}
+                {% if notebook.external_notebook.updated >= notebook.updated %}
+                <span class="glyphicon glyphicon-ok"></span>
+                {% else %}
+                <span class="glyphicon glyphicon-refresh"></span>
+                {% endif %}
+            {% else %}
+                <span class="glyphicon glyphicon-plus" style="color: green;"></span>
+            {% endif %}
+            </span>
+
+            <a href="{% url "evernote-list-notes" notebook.id %}" class="btn btn-md">
+                <span class="glyphicon glyphicon-th-list"></span>
+            </a>
+            {{ notebook.name }} <span class="pull-right text-muted">{{ notebook.updated }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}

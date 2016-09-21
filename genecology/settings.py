@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'markupfield',
     'reversion',
     'crispy_forms',
+    'social.apps.django_app.default',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -183,9 +184,17 @@ CONCEPT_TYPES = {
     'Institution': 'http://www.digitalhps.org/types/TYPE_3fc436d0-26e7-472c-94de-0b712b66b3f3',    # E40 Legal Body.
 }
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+AUTHENTICATION_BACKENDS = (
+    'social.backends.evernote.EvernoteSandboxOAuth',
+    'django.contrib.auth.backends.ModelBackend',
+ )
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/'
+SOCIAL_AUTH_EVERNOTE_SANDBOX_KEY = os.environ.get('EVERNOTE_KEY')
+SOCIAL_AUTH_EVERNOTE_SANDBOX_SECRET = os.environ.get('EVERNOTE_SECRET')

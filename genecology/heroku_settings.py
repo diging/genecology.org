@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'markupfield',
     'reversion',
     'crispy_forms',
+    'social.apps.django_app.default',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -189,3 +190,6 @@ REST_FRAMEWORK = {
 }
 
 BROKER_POOL_LIMIT = 0
+SOCIAL_AUTH_EVERNOTE_KEY = os.environ.get('EVERNOTE_KEY')
+SOCIAL_AUTH_EVERNOTE_SECRET = os.environ.get('EVERNOTE_SECRET')
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/'

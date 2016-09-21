@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.shortcuts import render, get_object_or_404
+from django.conf.urls import url, include
 from django import forms
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet, generic_inlineformset_factory
 from django.contrib.contenttypes.admin import GenericTabularInline, GenericStackedInline
@@ -9,12 +11,139 @@ from reversion.admin import VersionAdmin
 from models import *
 
 
+def create_modeladmin(modeladmin, model, name = None):
+    class  Meta:
+        proxy = True
+        app_label = model._meta.app_label
+
+    attrs = {'__module__': '', 'Meta': Meta}
+
+    newmodel = type(name, (model,), attrs)
+
+    admin.site.register(newmodel, modeladmin)
+    return modeladmin
+
+
 def help_text(s):
     """
     Cleans up help strings so that we can write them in ways that are
     human-readable without screwing up formatting in the admin interface.
     """
     return re.sub('\s+', ' ', s).strip()
+
+
+class SetCreatorMixin(object):
+    def save_model(self, request, obj, form, change):
+        """
+        Set the current user as creator.
+        """
+        try:
+            obj.creator
+        except:
+            obj.creator = request.user
+        obj.save()
+
+
+class TimeSpanPropertyForm(forms.ModelForm):
+    instance_of = forms.ModelChoiceField(RDFProperty.objects.filter(domain__identifier='E52_Time-Span'), label='property type')
+    value = forms.CharField(label='value', required=False,
+                            widget=forms.SelectDateWidget(empty_label=("Choose Year", "Choose Month", "Choose Day"),
+                                                          years=range(1800, 2016)))
+
+    class Meta:
+        model = Property
+        fields = ('instance_of', )
+
+    def save(self, *args, **kwargs):
+        temporal_entity = self.cleaned_data['source']
+
+        # E2 TEntity -[P4]-> E52 TSpan -[?]-> E61/dateTime.
+        if not temporal_entity.time_span:
+            timespan_instance = Entity(     # E52 instance.
+                instance_of=RDFClass.objects.get(identifier='E52_Time-Span'),
+                label='Time-span of %s' % temporal_entity.label,
+            )
+            timespan_instance.save()
+            has_timespan = Property(        # P4 instance.
+                instance_of=RDFProperty.objects.get(identifier='P4_has_time-span'),
+                source=temporal_entity,
+                target=timespan_instance
+            )
+            has_timespan.save()
+        else:
+            timespan_instance = temporal_entity.time_span
+
+        target_class = self.cleaned_data['instance_of'].range
+
+        # value is just a string, since we don't want to DateField validation to
+        #  force the user to artificially inflate the precision of the date.
+        year, month, day = self.cleaned_data['value'].split('-')
+        if month == '0':
+            precision = 'precision: year',
+        elif day == '0':
+            precision = 'precision: month',
+        else:
+            precision = 'precision: day'
+
+        target_instance = Entity(
+            instance_of=target_class,
+            label=self.cleaned_data['value'],
+        )
+        target_instance.save()
+
+        property_instance = Property(
+            instance_of=self.cleaned_data['instance_of'],
+            source=timespan_instance,
+            target=target_instance,
+        )
+
+        property_instance.save()
+        return property_instance
+
+
+class TimeSpanInline(admin.TabularInline):
+    model = Property
+    fk_name = 'source'
+    classes = ('grp-collapse grp-open',)
+    form = TimeSpanPropertyForm
+    extra = 1
+
+
+class EventAdminForm(forms.ModelForm):
+    # Only allow descendants of E5 Event.
+    instance_of = forms.ModelChoiceField(RDFClass.objects.get(identifier='E5_Event').children, label='Event type')
+
+    class Meta:
+        model = Entity
+        fields = ('label', 'instance_of', )
+
+    def save(self, *args, **kwargs):
+        return super(EventAdminForm, self).save(*args, **kwargs)
+
+
+class EventAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (None, {
+            'fields': ('label', 'instance_of')
+        }),
+        ('Time span', {
+            'classes': ('placeholder', 'properties_from-group'),
+            'fields': ()
+        })
+    )
+
+    form = EventAdminForm
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = super(EventAdmin, self).get_queryset(*args, **kwargs)
+        return queryset.filter(instance_of__in=RDFClass.objects.get(identifier='E5_Event').children)
+
+    # def save_model(self, request, obj, form, change):
+    #
+
+
+
+    inlines = [TimeSpanInline,]
 
 
 class TagAdminForm(forms.ModelForm):
@@ -202,7 +331,7 @@ class ContentRelationInline(GenericTabularInline):
     ct_fk_field = 'source_instance_id'
 
 
-class NoteAdmin(admin.ModelAdmin):
+class NoteAdmin(SetCreatorMixin, admin.ModelAdmin):
     class Meta:
         model = Note
     form = NoteAdminForm
@@ -216,18 +345,8 @@ class NoteAdmin(admin.ModelAdmin):
 
     inlines = [ContentRelationInline]
 
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
 
-
-class PostAdmin(admin.ModelAdmin):
+class PostAdmin(SetCreatorMixin, admin.ModelAdmin):
     class Meta:
         model = Post
     form = PostAdminForm
@@ -241,16 +360,6 @@ class PostAdmin(admin.ModelAdmin):
 
     inlines = [ContentRelationInline]
 
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
-
 
 class ContentRelationAdmin(admin.ModelAdmin):
     class Meta:
@@ -263,7 +372,7 @@ class ContentRelationAdmin(admin.ModelAdmin):
     }
 
 
-class DataAdmin(admin.ModelAdmin):
+class DataAdmin(SetCreatorMixin, admin.ModelAdmin):
     class Meta:
         model = Data
 
@@ -275,18 +384,8 @@ class DataAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'data_format', 'creator', 'created', 'updated')
 
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
 
-
-class ConceptProfileAdmin(admin.ModelAdmin):
+class ConceptProfileAdmin(SetCreatorMixin, admin.ModelAdmin):
     class Meta:
         model = ConceptProfile
 
@@ -302,18 +401,8 @@ class ConceptProfileAdmin(admin.ModelAdmin):
     }
     inlines = [ContentRelationInline,]
 
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
 
-
-class TagAdmin(VersionAdmin, admin.ModelAdmin):
+class TagAdmin(SetCreatorMixin, VersionAdmin, admin.ModelAdmin):
     class Meta:
         model = Tag
 
@@ -327,7 +416,7 @@ class TagAdmin(VersionAdmin, admin.ModelAdmin):
         super(VersionAdmin, self).log_change(request, object, message)
 
 
-class ImageAdmin(VersionAdmin, admin.ModelAdmin):
+class ImageAdmin(SetCreatorMixin, VersionAdmin, admin.ModelAdmin):
     class Meta:
         model = Image
     raw_id_fields = ('tags', 'about',)
@@ -339,18 +428,8 @@ class ImageAdmin(VersionAdmin, admin.ModelAdmin):
     form = ImageAdminForm
     inlines = [ContentRelationInline]
 
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
 
-
-class ExternalResourceAdmin(VersionAdmin, admin.ModelAdmin):
+class ExternalResourceAdmin(SetCreatorMixin, VersionAdmin, admin.ModelAdmin):
     class Meta:
         model = ExternalResource
 
@@ -362,16 +441,6 @@ class ExternalResourceAdmin(VersionAdmin, admin.ModelAdmin):
     }
     form = ExternalResourceAdminForm
     inlines = [ContentRelationInline]
-
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
 
 
 class RDFPropertyAdmin(admin.ModelAdmin):
@@ -393,7 +462,15 @@ class RDFClassAdmin(admin.ModelAdmin):
     list_display = ['identifier', 'label', 'comment']
 
 
-class EntityAdmin(admin.ModelAdmin):
+class EntityCreateRelationForm(forms.Form):
+    relation_type = forms.ModelChoiceField(queryset=RDFProperty.objects.all())
+    evidence = forms.ModelChoiceField(queryset=ExternalResource.objects.all())
+
+class EntityCreateRelationSelectTargetForm(forms.Form):
+    target = forms.ModelChoiceField(queryset=Entity.objects.all())
+
+
+class EntityAdmin(SetCreatorMixin, admin.ModelAdmin):
     class Meta:
         model = Entity
 
@@ -402,18 +479,53 @@ class EntityAdmin(admin.ModelAdmin):
     exclude = []
     list_display = ['label', 'instance_of', 'concept']
 
-    def save_model(self, request, obj, form, change):
+    def create_relation(self, request, entity_id):
         """
-        Set the current user as creator.
+        Prompt user to select a property type. Once selected, direct user to
+        ``create_relation_target`` view.
         """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
+
+        entity = get_object_or_404(Entity, pk=entity_id)
+
+        if request.method == 'POST':
+            form = EntityCreateRelationForm(request.POST)
+            if form.is_valid():
+                params = [
+                    request,
+                    entity_id,
+                    form.cleaned_data['relation_type'].id,
+                    form.cleaned_data['evidence'].id
+                ]
+                request.method = 'GET'
+                return self.create_relation_select_target(*params)
+
+        form = EntityCreateRelationForm()
+        form.fields['relation_type'].queryset = entity.instance_of.available_properties
+        return render(request, 'entityform.html', {'form': form})
+
+    def create_relation_select_target(self, request, entity_id, property_id, evidence_id):
+        entity = get_object_or_404(Entity, pk=entity_id)
+        property_class = get_object_or_404(RDFProperty, pk=property_id)
+        evidence_instance = get_object_or_404(ExternalResource, pk=evidence_id)
+        if request.method == 'POST':
+            if form.is_valid():
+                return
 
 
-class PropertyAdmin(admin.ModelAdmin):
+        form = EntityCreateRelationSelectTargetForm()
+        form.fields['target'].queryset = property_class.range.children_instances
+        return render(request, 'entityform.html', {'form': form})
+
+
+    def get_urls(self):
+        urls = super(EntityAdmin, self).get_urls()
+        extra_urls = [
+            url(r'^create/relation/(?P<entity_id>[0-9]+)/$', self.admin_site.admin_view(self.create_relation), name="entity_create_relation"),
+        ]
+        return extra_urls + urls
+
+
+class PropertyAdmin(SetCreatorMixin, admin.ModelAdmin):
     class Meta:
         model = Property
     form = PropertyAdminForm
@@ -425,16 +537,6 @@ class PropertyAdmin(admin.ModelAdmin):
     autocomplete_lookup_fields = {
         'fk': ['source', 'target',],
     }
-
-    def save_model(self, request, obj, form, change):
-        """
-        Set the current user as creator.
-        """
-        try:
-            obj.creator
-        except:
-            obj.creator = request.user
-        obj.save()
 
 
 class EntityInline(admin.TabularInline):
@@ -460,3 +562,4 @@ admin.site.register(RDFProperty, RDFPropertyAdmin)
 
 admin.site.register(Entity, EntityAdmin)
 admin.site.register(Property, PropertyAdmin)
+create_modeladmin(EventAdmin, name='event', model=Entity)

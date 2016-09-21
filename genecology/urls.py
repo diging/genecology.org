@@ -26,6 +26,8 @@ from blog import api
 
 
 urlpatterns = [
+    url('', include('social.apps.django_app.urls', namespace='social')),
+    url(r'^logout/$', blog_views.logout_view, name='logout'),
     url(r'^$', blog_views.home, name='home'),
     url(r'^about/$', blog_views.about, name='about'),
     url(r'^blog/$', blog_views.blog, name='blog'),
@@ -53,5 +55,7 @@ urlpatterns = [
     url(r'^search/', blog_views.PostSearchView.as_view(), name='search'),
     url(r'^admin/', admin.site.urls),
     url(r'^grappelli/', include('grappelli.urls')),
-
+    url(r'^evernote/note/(?P<note_id>[a-zA-Z0-9\-]+)/sync/$', blog_views.evernote_sync_note, name='evernote-sync-note'),
+    url(r'^evernote/notebooks/$', blog_views.evernote_list_notebooks, name='evernote-list-notebooks'),
+    url(r'^evernote/notebooks/(?P<notebook_id>[a-zA-Z0-9\-]+)/$', blog_views.evernote_list_notes, name='evernote-list-notes')
 ]

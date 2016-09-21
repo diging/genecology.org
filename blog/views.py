@@ -1,10 +1,15 @@
 from django.shortcuts import render, get_object_or_404
 from django import forms
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ObjectDoesNotExist
+
+from django.contrib.auth import logout
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -26,6 +31,8 @@ from concepts.authorities import get_namespace, get_by_namespace
 import urllib2 as urllib
 import csv
 import datetime
+
+from blog import evernote_api
 
 
 ## Helper functions start here.
@@ -445,3 +452,45 @@ class PostSearchView(SearchView):
 
     def get_context_data(self, *args, **kwargs):
         return super(PostSearchView, self).get_context_data(*args, **kwargs)
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(request.GET.get('next', reverse('home')))
+
+
+
+@staff_member_required
+def evernote_list_notebooks(request):
+    try:
+        context = {
+            'notebooks': evernote_api.list_notebooks(request.user)
+        }
+    except ObjectDoesNotExist:
+        # TODO: generate an informative error page.
+        return HttpResponseRedirect(reverse('home'))
+    return render(request, 'evernote/list_notebooks.html', context)
+
+
+@staff_member_required
+def evernote_list_notes(request, notebook_id):
+    try:
+        context = {
+            'notes': evernote_api.list_notes(request.user, notebook_id),
+        }
+    except ObjectDoesNotExist:
+        # TODO: generate an informative error page.
+        return HttpResponseRedirect(reverse('home'))
+    return render(request, 'evernote/list_notes.html', context)
+
+
+@staff_member_required
+def evernote_sync_note(request, note_id):
+    try:
+        external_note = evernote_api.sync_note(request.user, note_id)
+    except Exception as E:
+        # TODO: implement exception handling.
+        raise
+    last = request.GET.get('last', '/')
+    return HttpResponseRedirect(last)

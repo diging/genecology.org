@@ -1,5 +1,7 @@
 {% load staticfiles %}
 
+{% load i18n %}
+
 <nav class="navbar navbar-default">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -32,7 +34,13 @@
                 <!-- <li{% if active == 'methods' %} class="active"{% endif %}><a href="{% url 'methods' %}">Methods{% if active == 'methods' %}  <span class="sr-only">(current)</span>{% endif %}</a></li> -->
                 <li{% if active == 'about' %} class="active"{% endif %}><a href="{% url 'about' %}">About{% if active == 'about' %}  <span class="sr-only">(current)</span>{% endif %}</a></li>
                 <li{% if active == 'contribute' %} class="active"{% endif %}><a href="{% url 'contribute' %}">Contribute{% if active == 'contribute' %}  <span class="sr-only">(current)</span>{% endif %}</a></li>
-
+                <li>
+                    {% if user.is_active %}
+                    <a class="btn btn-md" href="{% url "evernote-list-notebooks" %}">
+                        <span class="fa fa-list"></span>
+                    </a>
+                    {% endif %}
+                </li>
             </ul>
 
             <form method="get" action="{% url 'search' %}" class="navbar-form navbar-right" role="search">
@@ -44,6 +52,7 @@
                     </div>
                     <button type="submit" class="btn btn-default">Search</button>
             </form>
+
         </div>
     </div>
 </nav>
