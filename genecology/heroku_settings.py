@@ -190,6 +190,12 @@ REST_FRAMEWORK = {
 }
 
 BROKER_POOL_LIMIT = 0
-SOCIAL_AUTH_EVERNOTE_KEY = os.environ.get('EVERNOTE_KEY')
-SOCIAL_AUTH_EVERNOTE_SECRET = os.environ.get('EVERNOTE_SECRET')
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/'
+
+AUTHENTICATION_BACKENDS = (
+    'social.backends.evernote.EvernoteSandboxOAuth',
+    'django.contrib.auth.backends.ModelBackend',
+ )
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://www.genecology.org/'
+SOCIAL_AUTH_EVERNOTE_SANDBOX_KEY = os.environ.get('EVERNOTE_KEY')
+SOCIAL_AUTH_EVERNOTE_SANDBOX_SECRET = os.environ.get('EVERNOTE_SECRET')
