@@ -32,7 +32,7 @@ import urllib2 as urllib
 import csv
 import datetime
 
-from blog import evernote_api
+from blog import evernote_api, tasks
 
 
 ## Helper functions start here.
