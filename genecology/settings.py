@@ -203,7 +203,7 @@ SOCIAL_AUTH_EVERNOTE_SECRET = os.environ.get('EVERNOTE_SECRET')
 AWS_STORAGE_BUCKET_NAME = 'genecology-develop-media'
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_KEY')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET')
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_CUSTOM_DOMAIN = 's3-us-west-2.s3.amazonaws.com/%s' % AWS_STORAGE_BUCKET_NAME
 
 
 MEDIAFILES_LOCATION = 'media'
