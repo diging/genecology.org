@@ -199,3 +199,14 @@ AUTHENTICATION_BACKENDS = (
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://www.genecology.org/'
 SOCIAL_AUTH_EVERNOTE_KEY = os.environ.get('EVERNOTE_KEY')
 SOCIAL_AUTH_EVERNOTE_SECRET = os.environ.get('EVERNOTE_SECRET')
+
+
+AWS_STORAGE_BUCKET_NAME = 'genecology-production-media'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_KEY')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET')
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+
+MEDIAFILES_LOCATION = 'media'
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+DEFAULT_FILE_STORAGE = 'blog.storage.MediaStorage'

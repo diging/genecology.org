@@ -35,3 +35,5 @@ Whoosh==2.7.0
 elasticsearch
 python-social-auth
 git+git://github.com/evernote/evernote-sdk-python.git
+django-storages
+boto

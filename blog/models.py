@@ -267,14 +267,28 @@ class ExternalResource(Resource):
         return ''
 
 
+def _generic_path(instance, filename):
+    """
+    """
+
+    return '/'.join(['generic', unicode(instance.id), 'content', filename])
+
+
 class GenericResource(Resource):
-    file_obj = models.FileField(upload_to='generic/', null=True, blank=True)
+    file_obj = models.FileField(upload_to=_generic_path, null=True, blank=True)
     remote = models.URLField(max_length=500, null=True, blank=True)
     original_format = models.CharField(max_length=255, blank=True, null=True)
 
 
+def _image_path(instance, filename):
+    """
+    """
+
+    return '/'.join(['images', unicode(instance.id), 'content', filename])
+
+
 class Image(Resource):
-    image = models.FileField(upload_to='images/', null=True, blank=True,
+    image = models.FileField(upload_to=_image_path, null=True, blank=True,
                              help_text=help_text("""
     If appropriate, upload a digital copy of the image here."""))
 
