@@ -192,7 +192,7 @@ REST_FRAMEWORK = {
 BROKER_POOL_LIMIT = 0
 
 AUTHENTICATION_BACKENDS = (
-    'social.backends.evernote.EvernoteSandboxOAuth',
+    'social.backends.evernote.EvernoteOAuth',
     'django.contrib.auth.backends.ModelBackend',
  )
 

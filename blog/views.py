@@ -108,7 +108,7 @@ def home(request):
         'posts': Post.objects.filter(published=True).order_by('-created'),
         'tags': Tag.objects.all(),
         'active': 'home',
-        'image': Image.objects.order_by('?').first()
+        'image': Image.objects.order_by('?').filter(feature=True).first()
     })
     return render(request, 'home.html', context)
 
@@ -201,6 +201,13 @@ def note(request, note_id):
 
     note = get_object_or_404(Note, pk=note_id)
 
+    about_relations = note.relations_from.filter(instance_of__identifier='P129_is_about')
+    source_url = None
+    if about_relations.count() > 0:
+        for relation in about_relations:
+            if hasattr(relation.target, 'resource_type') and relation.target.resource_type == ExternalResource.WEBSITE:
+                source_url = relation.target.source_location
+
     available_versions = reversion.get_for_object(note)
     versions = get_version_data(available_versions)
 
@@ -227,6 +234,7 @@ def note(request, note_id):
         'type': 'note',
         'title': note.title,
         'body': body,
+        'source_url': source_url
     })
     return render(request, 'note.html', context)
 
@@ -475,9 +483,16 @@ def evernote_list_notebooks(request):
 
 @staff_member_required
 def evernote_list_notes(request, notebook_id):
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 20))
     try:
         context = {
-            'notes': evernote_api.list_notes(request.user, notebook_id),
+            'notes': evernote_api.list_notes(request.user, notebook_id, offset=offset, max_notes=limit),
+            'offset': offset,
+            'limit': limit,
+            'notebook_id': notebook_id,
+            'previous_offset': offset - limit,
+            'next_offset': offset + limit,
         }
     except ObjectDoesNotExist:
         # TODO: generate an informative error page.
@@ -492,5 +507,17 @@ def evernote_sync_note(request, note_id):
     except Exception as E:
         # TODO: implement exception handling.
         raise
-    last = request.GET.get('last', '/')
+    last = request.GET.get('last', reverse('note', args=(external_note.local_note.id,)))
     return HttpResponseRedirect(last)
+
+
+@staff_member_required
+def evernote_preview_note(request, note_id):
+    # try:
+    context = {
+        'note': evernote_api.get_note(request.user, note_id)
+    }
+    # except:
+    #     # TODO: generate an informative error page.
+    #     return HttpResponseRedirect(reverse('home'))
+    return render(request, 'evernote/preview_note.html', context)

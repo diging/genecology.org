@@ -236,17 +236,25 @@ class Resource(Content):
 
 
 class ExternalResource(Resource):
+    WEBSITE = 'WB'
+    JOURNAL_ARTICLE = 'JO'
+    BOOK = 'BK'
+    PERIODICAL_ARTICLE = 'PE'
+    DATASET = 'DT'
+    ARCHIVE = 'AR'
+    OTHER = 'OT'
     RESOURCE_TYPES = (
-        ('WB', 'Website'),
-        ('JO', 'Journal article'),
-        ('BK', 'Book'),
-        ('PE', 'Periodical article'),
-        ('DT', 'Dataset'),
-        ('AR', 'Archive'),
-        ('OT', 'Other'),
+        (WEBSITE, 'Website'),
+        (JOURNAL_ARTICLE, 'Journal article'),
+        (BOOK, 'Book'),
+        (PERIODICAL_ARTICLE, 'Periodical article'),
+        (DATASET, 'Dataset'),
+        (ARCHIVE, 'Archive'),
+        (OTHER, 'Other'),
     )
     resource_type = models.CharField(max_length=2, choices=RESOURCE_TYPES)
     created_original =  models.DateField(verbose_name='original creation date',
+                                         null=True, blank=True,
                                          help_text=help_text("""
     Date on which the original resource was created. For example, the
     publication date of an article.
@@ -277,6 +285,8 @@ class Image(Resource):
 
     original_format = models.CharField(max_length=255, help_text=help_text("""
     If possible, this should be a MIME-type (e.g. image/jpeg)."""))
+
+    feature = models.BooleanField(default=False)
 
     @property
     def location(self):

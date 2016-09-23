@@ -20,7 +20,8 @@
                 <p>{{ note.summary }}</p>
                 <div>
                     {% for tag in note.tags.all %}
-                    <code><a href="{% url 'tag' tag.id %}">{{ tag.slug }}</a></code>
+                    <a href="{% url 'tag' tag.id %}" class="btn btn-sm"><code><i class="fa fa-tag" aria-hidden="true"></i> {{ tag.slug }}</code></a>
+                    <!-- <code><a href="{% url 'tag' tag.id %}">{{ tag.slug }}</a></code> -->
                     {% endfor %}
                 </div>
                 <p class="text-primary pull-right">
@@ -40,7 +41,7 @@
                 <div class="panel-body">
                     <div class="list-group">
                         {% for tag in tags %}
-                        <a href="{% url 'tag' tag.id %}" class="list-group-item clearfix"><code>{{ tag.slug}}</code>: {{ tag.title }} <span class="badge">{{ tag.num_posts }}</span></a>
+                        <a href="{% url 'tag' tag.id %}" class="list-group-item clearfix"><code><i class="fa fa-tag" aria-hidden="true"></i>  {{ tag.slug}}</code>: {{ tag.title }} <span class="badge">{{ tag.num_posts }}</span></a>
                         {% endfor %}
                     </div>
                 </div>

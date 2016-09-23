@@ -20,6 +20,13 @@
                     {% endfor %}
                 </p>
             {% endif %}
+            <div class="btn-group">
+                {% for tag in note.tags.all %}
+                <a href="{% url 'tag' tag.id %}" class="btn btn-sm"><code><i class="fa fa-tag" aria-hidden="true"></i> {{ tag.slug }}</code></a>
+                {% endfor %}
+
+            </div>
+
 
             <div>{{ body }}</div>
         </div>

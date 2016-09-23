@@ -8,11 +8,22 @@ from evernote.edam.notestore.ttypes import NoteFilter, NotesMetadataResultSpec
 from evernote.edam.type.ttypes import NoteSortOrder
 
 import datetime, os, pytz
+from uuid import uuid4
+
+
+EXTENSIONS = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/tiff': '.tiff',
+    'application/pdf': '.pdf',
+}
 
 
 def _get_client(user):
-    social = user.social_auth.get(provider='evernote-sandbox')
-    return EvernoteClient(token=social.extra_data['oauth_token']), social.extra_data['oauth_token']
+    token = user.social_auth.get(provider='evernote').extra_data['oauth_token']
+    client = EvernoteClient(token=token, sandbox=False)
+    return client, token
 
 
 def _get_note_store(user):
@@ -92,29 +103,40 @@ def _create_external_tag(datum):
 
 
 def _create_image_resource(creator, data):
-    file_path = _create_content_file(data['data']['body'], data['filename'])
+    mime_type = data.get('mime')
+    filename = data.get('filename')
+    if filename is None:
+        ext = EXTENSIONS[mime_type]
+        filename = str(uuid4()).replace('-', '') + ext
+    file_path = _create_content_file(data['data']['body'], filename)
     img = Image.objects.create(
-        name = data['filename'],
-        original_format = data['mime'],
+        name = filename,
+        original_format = mime_type,
         source = 'Evernote',
         identifier = data['id'],
         creator = creator,
     )
-    img.image.save(data['filename'], File(open(file_path, 'r')))
+    img.image.save(filename, File(open(file_path, 'r')))
     return img
 
 
 def _create_generic_resource(creator, data):
-    file_obj = _create_content_file(data['data']['body'], data['filename'])
-    return GenericResource.objects.create(
-        name = data['filename'],
-        file_obj = file_obj,
-        original_format = data['mime'],
+    mime_type = data.get('mime')
+    filename = data.get('filename')
+    if filename is None:
+        ext = EXTENSIONS[mime_type]
+        filename = str(uuid4()).replace('-', '') + ext
+    file_path = _create_content_file(data['data']['body'], filename)
+    rsrc = GenericResource.objects.create(
+        name = filename,
+
+        original_format = mime_type,
         source = 'Evernote',
         identifier = data['id'],
         creator = creator,
     )
-
+    rsrc.file_obj.save(filename, File(open(file_path, 'r')))
+    return rsrc
 
 def _create_external_resource(creator, data, external_note):
     if data['mime'].startswith('image'):
@@ -184,10 +206,10 @@ def get_note(user, note_id):
 
     return {
         'id': note_data.guid,
-        'title': note_data.title,
+        'title': note_data.title.decode('utf-8'),
         'created': _to_datetime(note_data.created),
         'updated': _to_datetime(note_data.updated),
-        'content': note_data.content,
+        'content': note_data.content.decode('utf-8'),
         'notebook_id': note_data.notebookGuid,
         'source_url': note_data.attributes.sourceURL,
         'resources': [
@@ -249,6 +271,17 @@ def sync_note(user, note_id):
         )
         created = True
         external_note.save()
+
+        if en_note['source_url']:
+            source_resource = ExternalResource.objects.create(
+                name = en_note['title'],
+                source_location = en_note['source_url'],
+                identifier_type = 'url',
+                creator = user,
+                identifier = en_note['source_url'],
+                resource_type = ExternalResource.WEBSITE,
+            )
+            _create_content_relation(external_note.local_note, 'P129_is_about', source_resource)
 
     # Update the actual content of the note. This has already been done for
     #  newly created notes.

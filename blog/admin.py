@@ -32,6 +32,15 @@ def help_text(s):
     return re.sub('\s+', ' ', s).strip()
 
 
+def make_image_feature(modeladmin, request, queryset):
+    queryset.update(feature=True)
+
+
+def make_image_not_feature(modeladmin, request, queryset):
+    queryset.update(feature=True)
+
+
+
 class SetCreatorMixin(object):
     def save_model(self, request, obj, form, change):
         """
@@ -425,6 +434,7 @@ class ImageAdmin(SetCreatorMixin, VersionAdmin, admin.ModelAdmin):
     autocomplete_lookup_fields = {
         'm2m': ['tags', 'about'],
     }
+    actions = [make_image_feature, make_image_not_feature]
     form = ImageAdminForm
     inlines = [ContentRelationInline]
 
