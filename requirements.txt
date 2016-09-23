@@ -36,4 +36,4 @@ elasticsearch
 python-social-auth
 git+git://github.com/evernote/evernote-sdk-python.git
 django-storages
-boto
+boto3
