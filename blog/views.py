@@ -503,11 +503,11 @@ def evernote_list_notes(request, notebook_id):
 @staff_member_required
 def evernote_sync_note(request, note_id):
     try:
-        external_note = evernote_api.sync_note(request.user, note_id)
+        tasks.sync_note.delay(request.user, note_id)
     except Exception as E:
         # TODO: implement exception handling.
         raise
-    last = request.GET.get('last', reverse('note', args=(external_note.local_note.id,)))
+    last = request.GET.get('last', '/')
     return HttpResponseRedirect(last)
 
 
