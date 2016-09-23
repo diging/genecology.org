@@ -31,49 +31,9 @@
             <div>{{ body }}</div>
         </div>
         <div class="col-sm-4">
-            {% if post.relations_to.count > 0 or post.relations_from.count > 0 %}
-            <div class="panel">
-                <div class="panel-heading">
-                    <span class="h3">Related content</span>
-                </div>
-                <ul class="list-group">
-                    {% for relation in post.relations_to.all %}
-                    <li class="list-group-item">
-                        <a  href="{{ relation.source.get_absolute_url }}"
-                            class="label label-primary"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.source.description }}"
-                            data-placement="top">{{ relation.source }}</a>
-                        <a  class="label label-default"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.instance_of.comment }}"
-                            data-placement="top">{{ relation.name }} ({{ relation.instance_of }})</a>
-                        <a class="label label-warning">this post</a>
-                        <div class="text text-info">{{ relation.description }}</div>
-                    </li>
-                    {% endfor %}
-                    {% for relation in post.relations_from.all %}
-                    <li class="list-group-item">
-                        <a class="label label-warning">this post</a>
-                        <a  class="label label-default"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.instance_of.comment }}"
-                            data-placement="top">{{ relation.name }} ({{ relation.instance_of }})</a>
-                        <a href="{{ relation.target.get_absolute_url }}"
-                            class="label label-primary"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.target.description }}"
-                            data-placement="top">{{ relation.target }}</a>
-                        <div class="text text-info">{{ relation.description }}</div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+            {% with post as instance %}
+            {% include "related_content.html" %}
+            {% endwith %}
         </div>
     </div>
 </div>

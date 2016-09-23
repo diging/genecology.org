@@ -1,0 +1,93 @@
+{% if instance.relations_to.count > 0 or instance.relations_from.count > 0 or relations_to.count > 0 or relations_from.count > 0 %}
+<div class="panel">
+    <div class="panel-heading">
+        <span class="h3">Related content</span>
+    </div>
+    <ul class="list-group">
+        {% for relation in instance.relations_to.all %}
+        <li class="list-group-item">
+            <a  href="{{ relation.source.get_absolute_url }}"
+                class="text-primary"
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.source.description }}"
+                data-placement="top">{{ relation.source|truncatechars:40 }}</a>&nbsp;
+            <a  class="text-warning"
+                {% if relation.instance_of.comment %}
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.instance_of.comment }}"
+                data-placement="top"
+                {% endif %}
+                >
+                ({{ relation.instance_of }})
+            </a>
+            <div class="text text-info">{{ relation.description }}</div>
+        </li>
+        {% endfor %}
+        {% for relation in relations_to.all %}
+        <li class="list-group-item">
+            <a  href="{{ relation.source.get_absolute_url }}"
+                class="text-primary"
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.source.description }}"
+                data-placement="top">{{ relation.source|truncatechars:40 }}</a>&nbsp;
+            <a  class="text-warning"
+                {% if relation.instance_of.comment %}
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.instance_of.comment }}"
+                data-placement="top"
+                {% endif %}
+                >
+                ({{ relation.instance_of }})
+            </a>
+            <div class="text text-info">{{ relation.description }}</div>
+        </li>
+        {% endfor %}
+        {% for relation in instance.relations_from.all %}
+        <li class="list-group-item">
+            <a class="text-warning"
+                {% if relation.instance_of.comment %}
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.instance_of.comment }}"
+                data-placement="top"
+                {% endif %}
+                >
+                {{ relation.instance_of }}
+            </a>:&nbsp;
+            <a href="{{ relation.target.get_absolute_url }}"
+                class="text-primary"
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.target.description }}"
+                data-placement="top">{{ relation.target|truncatechars:40 }}</a>
+            <div class="text text-info">{{ relation.description }}</div>
+        </li>
+        {% endfor %}
+        {% for relation in relations_from.all %}
+        <li class="list-group-item">
+            <a class="text-warning"
+                {% if relation.instance_of.comment %}
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.instance_of.comment }}"
+                data-placement="top"
+                {% endif %}
+                >
+                {{ relation.instance_of }}
+            </a>:&nbsp;
+            <a href="{{ relation.target.get_absolute_url }}"
+                class="text-primary"
+                data-toggle="tooltip"
+                data-html="true"
+                title="{{ relation.target.description }}"
+                data-placement="top">{{ relation.target|truncatechars:40 }}</a>
+            <div class="text text-info">{{ relation.description }}</div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

@@ -212,6 +212,8 @@ def note(request, note_id):
     versions = get_version_data(available_versions)
 
     date, body, subtitle = available_versions[0].revision.date_created, note.content, None
+    if body.raw.startswith('<?xml'):
+        body = body.raw
     version_id = request.GET.get('version', None)
 
     if version_id and int(version_id) != available_versions[0].revision_id:
