@@ -502,11 +502,9 @@ def evernote_list_notes(request, notebook_id):
 
 @staff_member_required
 def evernote_sync_note(request, note_id):
-    try:
-        tasks.sync_note.delay(request.user.id, note_id)
-    except Exception as E:
-        # TODO: implement exception handling.
-        raise
+
+    tasks.sync_note.delay(int(request.user.id), note_id)
+
     last = request.GET.get('last', '/')
     return HttpResponseRedirect(last)
 
