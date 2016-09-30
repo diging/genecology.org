@@ -214,7 +214,7 @@ def note(request, note_id):
     if len(available_versions) > 0:
         date, body, subtitle = available_versions[0].revision.date_created, note.content, None
     else:
-        date = note.created, note.content, None
+        date, body, subtitle = note.created, note.content, None
     if body.raw.startswith('<?xml'):
         body = body.raw
     version_id = request.GET.get('version', None)
