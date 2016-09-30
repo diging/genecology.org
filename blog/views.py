@@ -211,7 +211,10 @@ def note(request, note_id):
     available_versions = reversion.get_for_object(note)
     versions = get_version_data(available_versions)
 
-    date, body, subtitle = available_versions[0].revision.date_created, note.content, None
+    if len(available_versions) > 0:
+        date, body, subtitle = available_versions[0].revision.date_created, note.content, None
+    else:
+        date = note.created, note.content, None
     if body.raw.startswith('<?xml'):
         body = body.raw
     version_id = request.GET.get('version', None)
