@@ -226,8 +226,7 @@ def note(request, note_id):
         subtitle = 'Historical version %s' % version_id
         body = mark_safe(generate_patch_html(version, available_versions[0], 'content'))
 
-    if not (request.user.is_staff or post.published):
-        return HttpResponseNotFound("<h1>Note not found.</h1>")
+    
 
     context = get_default_context()
     context.update({
