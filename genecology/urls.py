@@ -48,6 +48,7 @@ urlpatterns = [
     url(r'^concepts/organisms[/]?.json$', api.OrganismListView.as_view(), name='organisms_rest_list'),
     url(r'^post/(?P<post_id>[0-9]+)/$', blog_views.post, name='post'),
     url(r'^note/(?P<note_id>[0-9]+)/$', blog_views.note, name='note'),
+    url(r'^note/(?P<note_id>[0-9]+)/content/$', blog_views.note_content, name='note-content'),
     url(r'^data/(?P<data_id>[0-9]+)/$', blog_views.datum, name='datum'),
     url(r'^post/(?P<post_id>[0-9]+)[/]?.json$', blog_views.post_rest_detail, name='post_rest_detail'),
     url(r'^topic/(?P<tag_id>[0-9]+)/$', blog_views.tag, name='tag'),

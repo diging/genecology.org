@@ -188,7 +188,7 @@ blockquote {
 }
 
 
-en-note >div {
+en-note > div {
     max-width: 100% !important;
     overflow: scroll !important;
 }

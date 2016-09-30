@@ -226,7 +226,7 @@ def note(request, note_id):
         subtitle = 'Historical version %s' % version_id
         body = mark_safe(generate_patch_html(version, available_versions[0], 'content'))
 
-    
+
 
     context = get_default_context()
     context.update({
@@ -523,3 +523,14 @@ def evernote_preview_note(request, note_id):
     #     # TODO: generate an informative error page.
     #     return HttpResponseRedirect(reverse('home'))
     return render(request, 'evernote/preview_note.html', context)
+
+
+def note_content(request, note_id):
+    note = get_object_or_404(Note, pk=note_id)
+    body = note.content
+    if body.raw.startswith('<?xml'):
+        body = body.raw
+    else:
+        body = body.rendered
+
+    return HttpResponse(body)
