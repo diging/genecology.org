@@ -19,7 +19,7 @@
             </a>
             {% endif %}
         {% else %}
-            <a href="{% url "evernote-sync-note" note.id %}?last={% url "evernote-list-notes" notebook_id %}"
+            <a href="{% url "evernote-sync-note" note.id %}"
                 class="btn btn-md"
                 >
                 <span class="glyphicon glyphicon-plus" style="color: green;"></span>
