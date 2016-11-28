@@ -534,3 +534,18 @@ def note_content(request, note_id):
         body = body.rendered
 
     return HttpResponse(body)
+
+
+def image_content(request, image_id):
+    image = Image.objects.get(pk=image_id)
+    if image.original_format:
+        content_type = image.original_format
+    else:
+        content_type = 'application/octet-stream'
+
+    if image.image:
+        try:
+            with open(image.image, 'rb') as f:
+                return HttpResponse(f.read(), content_type=content_type)
+        except IOError:    # Whoops....
+            return HttpResponse('Hmmm....something went wrong.')

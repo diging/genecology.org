@@ -302,6 +302,9 @@ class Image(Resource):
 
     feature = models.BooleanField(default=False)
 
+    def get_absolute_url(self):
+        return reverse('image', args=(self.id,))
+
     @property
     def location(self):
         """

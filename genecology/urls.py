@@ -46,6 +46,7 @@ urlpatterns = [
     url(r'^concepts/institutions[/]?.json$', api.InstitutionListView.as_view(), name='institutions_rest_list'),
     url(r'^concepts/organisms/$', blog_views.organisms, name='organisms'),
     url(r'^concepts/organisms[/]?.json$', api.OrganismListView.as_view(), name='organisms_rest_list'),
+    url(r'^image/(?P<image_id>[0-9]+)/$', blog_views.image_content, name='image'),
     url(r'^post/(?P<post_id>[0-9]+)/$', blog_views.post, name='post'),
     url(r'^note/(?P<note_id>[0-9]+)/$', blog_views.note, name='note'),
     url(r'^note/(?P<note_id>[0-9]+)/content/$', blog_views.note_content, name='note-content'),
