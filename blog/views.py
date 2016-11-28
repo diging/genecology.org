@@ -544,6 +544,7 @@ def image_content(request, image_id):
         content_type = 'application/octet-stream'
 
     if image.image:
+        return HttpResponseRedirect(image.image.url)
         try:
             with open(image.image.path, 'rb') as f:
                 return HttpResponse(f.read(), content_type=content_type)
