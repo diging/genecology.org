@@ -545,7 +545,7 @@ def image_content(request, image_id):
 
     if image.image:
         try:
-            with open(image.image, 'rb') as f:
+            with open(image.image.path, 'rb') as f:
                 return HttpResponse(f.read(), content_type=content_type)
         except IOError:    # Whoops....
             return HttpResponse('Hmmm....something went wrong.')
