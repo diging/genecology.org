@@ -10,7 +10,7 @@ from blog.schema import *
 
 
 def load_cidoc_crm(apps, schema_editor):
-    import_schema('http://www.cidoc-crm.org/rdfs/cidoc_crm_v6.0-draft-2015January.rdfs', 'CIDOC CRM 6.0')
+    import_schema('http://cidoc-crm.org/rdfs/cidoc_crm_v6.2.1-draft-b-2015October.rdfs', 'CIDOC CRM 6.0')
 
 
 def delete_cidoc_crm(apps, schema_editor):
