@@ -20,11 +20,26 @@
                 <p>{{ post.summary }}</p>
                 <div>
                     {% for tag in post.tags.all %}
-                    <code><a href="{% url 'tag' tag.id %}">{{ tag.slug }}</a></code>
+                    <a href="{% url 'tag' tag.id %}" class="btn btn-sm"><code><i class="fa fa-tag" aria-hidden="true"></i> {{ tag.slug }}</code></a>
                     {% endfor %}
                 </div>
                 <p class="text-primary pull-right">
                     <a href="{% url 'post' post.id %}">Read More</a>
+                </p>
+
+            </div>
+            {% endfor %}
+            {% for note in tag.note_set.all %}
+            <div class="blog-post-summary">
+                <h3><a href="{% url 'note' note.id %}">{{ note.title }}</a></h3>
+                <p class="text-muted">{{ note.creator.full_name }} | {{ note.created }}</p>
+                <div>
+                    {% for tag in note.tags.all %}
+                    <code><a href="{% url 'tag' tag.id %}">{{ tag.slug }}</a></code>
+                    {% endfor %}
+                </div>
+                <p class="text-primary pull-right">
+                    <a href="{% url 'note' note.id %}">Read More</a>
                 </p>
 
             </div>

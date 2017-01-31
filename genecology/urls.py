@@ -26,6 +26,8 @@ from blog import api
 
 
 urlpatterns = [
+    url('', include('social.apps.django_app.urls', namespace='social')),
+    url(r'^logout/$', blog_views.logout_view, name='logout'),
     url(r'^$', blog_views.home, name='home'),
     url(r'^about/$', blog_views.about, name='about'),
     url(r'^blog/$', blog_views.blog, name='blog'),
@@ -44,8 +46,10 @@ urlpatterns = [
     url(r'^concepts/institutions[/]?.json$', api.InstitutionListView.as_view(), name='institutions_rest_list'),
     url(r'^concepts/organisms/$', blog_views.organisms, name='organisms'),
     url(r'^concepts/organisms[/]?.json$', api.OrganismListView.as_view(), name='organisms_rest_list'),
+    url(r'^image/(?P<image_id>[0-9]+)/$', blog_views.image_content, name='image'),
     url(r'^post/(?P<post_id>[0-9]+)/$', blog_views.post, name='post'),
     url(r'^note/(?P<note_id>[0-9]+)/$', blog_views.note, name='note'),
+    url(r'^note/(?P<note_id>[0-9]+)/content/$', blog_views.note_content, name='note-content'),
     url(r'^data/(?P<data_id>[0-9]+)/$', blog_views.datum, name='datum'),
     url(r'^post/(?P<post_id>[0-9]+)[/]?.json$', blog_views.post_rest_detail, name='post_rest_detail'),
     url(r'^topic/(?P<tag_id>[0-9]+)/$', blog_views.tag, name='tag'),
@@ -53,5 +57,8 @@ urlpatterns = [
     url(r'^search/', blog_views.PostSearchView.as_view(), name='search'),
     url(r'^admin/', admin.site.urls),
     url(r'^grappelli/', include('grappelli.urls')),
-
+    url(r'^evernote/note/(?P<note_id>[a-zA-Z0-9\-]+)$', blog_views.evernote_preview_note, name='evernote-preview-note'),
+    url(r'^evernote/note/(?P<note_id>[a-zA-Z0-9\-]+)/sync/$', blog_views.evernote_sync_note, name='evernote-sync-note'),
+    url(r'^evernote/notebooks/$', blog_views.evernote_list_notebooks, name='evernote-list-notebooks'),
+    url(r'^evernote/notebooks/(?P<notebook_id>[a-zA-Z0-9\-]+)/$', blog_views.evernote_list_notes, name='evernote-list-notes')
 ]

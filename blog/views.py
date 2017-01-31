@@ -1,10 +1,15 @@
 from django.shortcuts import render, get_object_or_404
 from django import forms
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ObjectDoesNotExist
+
+from django.contrib.auth import logout
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -26,6 +31,8 @@ from concepts.authorities import get_namespace, get_by_namespace
 import urllib2 as urllib
 import csv
 import datetime
+
+from blog import evernote_api, tasks
 
 
 ## Helper functions start here.
@@ -101,7 +108,7 @@ def home(request):
         'posts': Post.objects.filter(published=True).order_by('-created'),
         'tags': Tag.objects.all(),
         'active': 'home',
-        'image': Image.objects.order_by('?').first()
+        'image': Image.objects.order_by('?').filter(feature=True).first()
     })
     return render(request, 'home.html', context)
 
@@ -194,10 +201,22 @@ def note(request, note_id):
 
     note = get_object_or_404(Note, pk=note_id)
 
+    about_relations = note.relations_from.filter(instance_of__identifier='P129_is_about')
+    source_url = None
+    if about_relations.count() > 0:
+        for relation in about_relations:
+            if hasattr(relation.target, 'resource_type') and relation.target.resource_type == ExternalResource.WEBSITE:
+                source_url = relation.target.source_location
+
     available_versions = reversion.get_for_object(note)
     versions = get_version_data(available_versions)
 
-    date, body, subtitle = available_versions[0].revision.date_created, note.content, None
+    if len(available_versions) > 0:
+        date, body, subtitle = available_versions[0].revision.date_created, note.content, None
+    else:
+        date, body, subtitle = note.created, note.content, None
+    if body.raw.startswith('<?xml'):
+        body = body.raw
     version_id = request.GET.get('version', None)
 
     if version_id and int(version_id) != available_versions[0].revision_id:
@@ -207,8 +226,7 @@ def note(request, note_id):
         subtitle = 'Historical version %s' % version_id
         body = mark_safe(generate_patch_html(version, available_versions[0], 'content'))
 
-    if not (request.user.is_staff or post.published):
-        return HttpResponseNotFound("<h1>Note not found.</h1>")
+
 
     context = get_default_context()
     context.update({
@@ -220,6 +238,7 @@ def note(request, note_id):
         'type': 'note',
         'title': note.title,
         'body': body,
+        'source_url': source_url
     })
     return render(request, 'note.html', context)
 
@@ -445,3 +464,89 @@ class PostSearchView(SearchView):
 
     def get_context_data(self, *args, **kwargs):
         return super(PostSearchView, self).get_context_data(*args, **kwargs)
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(request.GET.get('next', reverse('home')))
+
+
+
+@staff_member_required
+def evernote_list_notebooks(request):
+    try:
+        context = {
+            'notebooks': evernote_api.list_notebooks(request.user)
+        }
+    except ObjectDoesNotExist:
+        # TODO: generate an informative error page.
+        return HttpResponseRedirect(reverse('home'))
+    return render(request, 'evernote/list_notebooks.html', context)
+
+
+@staff_member_required
+def evernote_list_notes(request, notebook_id):
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 20))
+    try:
+        context = {
+            'notes': evernote_api.list_notes(request.user, notebook_id, offset=offset, max_notes=limit),
+            'offset': offset,
+            'limit': limit,
+            'notebook_id': notebook_id,
+            'previous_offset': offset - limit,
+            'next_offset': offset + limit,
+        }
+    except ObjectDoesNotExist:
+        # TODO: generate an informative error page.
+        return HttpResponseRedirect(reverse('home'))
+    return render(request, 'evernote/list_notes.html', context)
+
+
+@staff_member_required
+def evernote_sync_note(request, note_id):
+
+    tasks.sync_note.delay(int(request.user.id), note_id)
+
+    last = request.GET.get('last', '/')
+    return HttpResponseRedirect(last)
+
+
+@staff_member_required
+def evernote_preview_note(request, note_id):
+    # try:
+    context = {
+        'note': evernote_api.get_note(request.user, note_id)
+    }
+    # except:
+    #     # TODO: generate an informative error page.
+    #     return HttpResponseRedirect(reverse('home'))
+    return render(request, 'evernote/preview_note.html', context)
+
+
+def note_content(request, note_id):
+    note = get_object_or_404(Note, pk=note_id)
+    body = note.content
+    if body.raw.startswith('<?xml'):
+        body = body.raw
+    else:
+        body = body.rendered
+
+    return HttpResponse(body)
+
+
+def image_content(request, image_id):
+    image = Image.objects.get(pk=image_id)
+    if image.original_format:
+        content_type = image.original_format
+    else:
+        content_type = 'application/octet-stream'
+
+    if image.image:
+        return HttpResponseRedirect(image.image.url)
+        try:
+            with open(image.image.path, 'rb') as f:
+                return HttpResponse(f.read(), content_type=content_type)
+        except IOError:    # Whoops....
+            return HttpResponse('Hmmm....something went wrong.')

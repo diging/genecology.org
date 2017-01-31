@@ -88,7 +88,69 @@ class Content(models.Model):
     def save(self, *args, **kwargs):
         if not self.created:
             self.created = datetime.datetime.now()
+
+        if not self.slug:
+            for field in ['title', 'name', 'filename']:
+                if hasattr(self, field):
+                    self.slug = slugify(getattr(self, field))[:100]
+                    break
+
         super(Content, self).save(*args, **kwargs)
+
+
+class ExternalTag(models.Model):
+    EVERNOTE = 'EN'
+    NOTE_SOURCES = [
+        (EVERNOTE, 'Evernote'),
+    ]
+    external_id = models.CharField(max_length=255, unique=True)
+    external_source = models.CharField(max_length=2, choices=NOTE_SOURCES)
+    local_tag = models.ForeignKey('Tag', related_name='external_tags')
+    label = models.CharField(max_length=255)
+
+
+class ExternalEmbeddedResource(models.Model):
+    EVERNOTE = 'EN'
+    NOTE_SOURCES = [
+        (EVERNOTE, 'Evernote'),
+    ]
+    external_id = models.CharField(max_length=255, unique=True)
+    external_source = models.CharField(max_length=2, choices=NOTE_SOURCES)
+    updated = models.DateTimeField(auto_now=True)
+    part_of = models.ForeignKey('ExternalNote', related_name='resources')
+
+    local_resource_content_type = models.ForeignKey(ContentType,
+                                            related_name='lrc')
+    local_resource_instance_id = models.IntegerField(default=0)
+    local_resource = GenericForeignKey('local_resource_content_type',
+                                       'local_resource_instance_id')
+
+
+class ExternalNotebook(models.Model):
+    EVERNOTE = 'EN'
+    NOTE_SOURCES = [
+        (EVERNOTE, 'Evernote'),
+    ]
+    external_id = models.CharField(max_length=255, unique=True)
+    external_source = models.CharField(max_length=2, choices=NOTE_SOURCES)
+    updated = models.DateTimeField(auto_now=True)
+    belongs_to = models.ForeignKey('GenecologyUser', related_name='external_notebooks')
+
+
+class ExternalNote(models.Model):
+    EVERNOTE = 'EN'
+    NOTE_SOURCES = [
+        (EVERNOTE, 'Evernote'),
+    ]
+    external_id = models.CharField(max_length=255)
+    external_source = models.CharField(max_length=2, choices=NOTE_SOURCES)
+    retrieved = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    local_note = models.OneToOneField('Note', related_name='external_note',
+                                      null=True, blank=True)
+    part_of = models.ForeignKey('ExternalNotebook', related_name='notes', null=True, blank=True)
+    belongs_to = models.ForeignKey('GenecologyUser', related_name='external_notes', null=True, blank=True)
 
 
 class Note(Content):
@@ -174,17 +236,25 @@ class Resource(Content):
 
 
 class ExternalResource(Resource):
+    WEBSITE = 'WB'
+    JOURNAL_ARTICLE = 'JO'
+    BOOK = 'BK'
+    PERIODICAL_ARTICLE = 'PE'
+    DATASET = 'DT'
+    ARCHIVE = 'AR'
+    OTHER = 'OT'
     RESOURCE_TYPES = (
-        ('WB', 'Website'),
-        ('JO', 'Journal article'),
-        ('BK', 'Book'),
-        ('PE', 'Periodical article'),
-        ('DT', 'Dataset'),
-        ('AR', 'Archive'),
-        ('OT', 'Other'),
+        (WEBSITE, 'Website'),
+        (JOURNAL_ARTICLE, 'Journal article'),
+        (BOOK, 'Book'),
+        (PERIODICAL_ARTICLE, 'Periodical article'),
+        (DATASET, 'Dataset'),
+        (ARCHIVE, 'Archive'),
+        (OTHER, 'Other'),
     )
     resource_type = models.CharField(max_length=2, choices=RESOURCE_TYPES)
     created_original =  models.DateField(verbose_name='original creation date',
+                                         null=True, blank=True,
                                          help_text=help_text("""
     Date on which the original resource was created. For example, the
     publication date of an article.
@@ -197,8 +267,28 @@ class ExternalResource(Resource):
         return ''
 
 
+def _generic_path(instance, filename):
+    """
+    """
+
+    return '/'.join(['generic', unicode(instance.id), 'content', filename])
+
+
+class GenericResource(Resource):
+    file_obj = models.FileField(upload_to=_generic_path, null=True, blank=True)
+    remote = models.URLField(max_length=500, null=True, blank=True)
+    original_format = models.CharField(max_length=255, blank=True, null=True)
+
+
+def _image_path(instance, filename):
+    """
+    """
+
+    return '/'.join(['images', unicode(instance.id), 'content', filename])
+
+
 class Image(Resource):
-    image = models.FileField(upload_to='images/', null=True, blank=True,
+    image = models.FileField(upload_to=_image_path, null=True, blank=True,
                              help_text=help_text("""
     If appropriate, upload a digital copy of the image here."""))
 
@@ -209,6 +299,11 @@ class Image(Resource):
 
     original_format = models.CharField(max_length=255, help_text=help_text("""
     If possible, this should be a MIME-type (e.g. image/jpeg)."""))
+
+    feature = models.BooleanField(default=False)
+
+    def get_absolute_url(self):
+        return reverse('image', args=(self.id,))
 
     @property
     def location(self):
@@ -244,9 +339,6 @@ class Post(Content):
 
     published = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)[:100]
-        super(Post, self).save(*args, **kwargs)
 
     @property
     def title_condensed(self):
@@ -273,14 +365,11 @@ class Tag(models.Model):
         return self.slug
 
     def num_posts(self):
-        return self.post_set.filter(published=True).count()
+        return self.post_set.filter(published=True).count() + self.note_set.filter().count()
 
 
 class GenecologyUserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
-        if not email:
-            raise ValueError('Users must have an email address')
-
         user = self.model(
             username=username,
             email=self.normalize_email(email),
@@ -306,6 +395,8 @@ class GenecologyUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
+        null=True,
+        blank=True
     )
 
     affiliation = models.CharField(max_length=255, blank=True, null=True)
@@ -320,7 +411,6 @@ class GenecologyUser(AbstractBaseUser, PermissionsMixin):
     objects = GenecologyUserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
 
     def get_full_name(self):
         return self.full_name
@@ -362,6 +452,7 @@ class RDFSchema(models.Model):
         verbose_name = 'RDF schema'
         verbose_name_plural = 'RDF schemas'
 
+
 class RDFClass(models.Model):
     """
     """
@@ -381,6 +472,53 @@ class RDFClass(models.Model):
         if self.label:
             return self.label
         return self.identifier
+
+    @property
+    def children(self):
+        """
+        QuerySet containing this :class:`.RDFClass` and all of its children.
+        """
+        def traverse_down(rdf_class):
+            classes = [rdf_class]
+            if rdf_class.superClassOf.count() > 0:
+                for sub_class in rdf_class.superClassOf.all():
+                    classes += traverse_down(sub_class)
+            return classes
+
+        # We want a QuerySet rather than a list. Maybe there is a less hacky
+        #  way to do this....
+        return RDFClass.objects.filter(id__in=[obj.id for obj in traverse_down(self)]).order_by('label')
+
+    @property
+    def children_instances(self):
+        """
+        QuerySet containing all instances of this :class:`.RDFClass` and its
+        children.
+        """
+        return Entity.objects.filter(id__in=[instance.id for rdf_class in self.children for instance in rdf_class.instances.all()])
+
+    @property
+    def parents(self):
+        """
+        QuerySet containing this :class:`.RDFClass` and all of its parents.
+        """
+        def traverse_up(rdf_class):
+            classes = [rdf_class]
+            if rdf_class.subClassOf:
+                classes += traverse_up(rdf_class.subClassOf)
+            return classes
+
+        # We want a QuerySet rather than a list. Maybe there is a less hacky
+        #  way to do this....
+        return RDFClass.objects.filter(id__in=[obj.id for obj in traverse_up(self)]).order_by('label')
+
+    @property
+    def available_properties(self):
+        """
+        QuerySet containing all :class:`.RDFProperty` that can be instantiated
+        with an instance of this :class:`.RDFClass` as its ``source``.
+        """
+        return RDFProperty.objects.filter(domain_id__in=self.parents)
 
 
 class RDFProperty(models.Model):
@@ -415,7 +553,6 @@ class Entity(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-
     label = models.CharField(max_length=255, blank=True, null=True)
     concept = models.OneToOneField(Concept, null=True, blank=True, related_name='entity_instance')
     instance_of = models.ForeignKey('RDFClass', related_name='instances')
@@ -439,6 +576,13 @@ class Entity(models.Model):
             return [rdf_class]    # Reached the highest level of the lineage.
 
         return target_class in traverse_up(self.instance_of)
+
+    @property
+    def time_span(self):
+        queryset = self.properties_from.filter(instance_of__identifier='E52_Time-Span')
+        if queryset.count() > 0:
+            return queryset.first().target
+        return
 
 
 class Property(models.Model):

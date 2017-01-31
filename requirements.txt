@@ -31,3 +31,7 @@ wheel==0.24.0
 whitenoise==2.0.6
 Whoosh==2.7.0
 elasticsearch
+python-social-auth
+git+git://github.com/evernote/evernote-sdk-python.git
+django-storages
+boto3

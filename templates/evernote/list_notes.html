@@ -1,0 +1,46 @@
+{% extends 'base_site.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+<div class="container">
+    <div>
+        {% if previous_offset %}<a href="{% url "evernote-list-notes" notebook_id %}?offset={{ previous_offset }}">Preview</a>{% endif %}
+        <a href="{% url "evernote-list-notes" notebook_id %}?offset={{ next_offset }}" class="pull-right">Next</a>
+    </div>
+    <ul class="list-group">
+        {% for note in notes %}
+        <li class="list-group-item">
+            <span class="btn-group">
+            {% if note.external_note  %}
+                {% if note.external_note.updated >= note.updated %}
+                <span class="btn btn-md">
+                    <span class="glyphicon glyphicon-ok" style="color: blue;"></span>
+                </span>
+                {% else %}
+                <a href="{% url "evernote-sync-note" note.id %}?last={% url "evernote-list-notes" notebook_id %}"
+                    class="btn btn-md"
+                    style="color: orange;">
+                    <span class="glyphicon glyphicon-refresh"></span>
+                </a>
+                {% endif %}
+            {% else %}
+                <a href="{% url "evernote-sync-note" note.id %}?last={% url "evernote-list-notes" notebook_id %}"
+                    class="btn btn-md"
+                    >
+                    <span class="glyphicon glyphicon-plus" style="color: green;"></span>
+                </a>
+            {% endif %}
+                <a href="{% url "evernote-preview-note" note.id %}" class="btn btn-md">
+                    <span class="fa fa-eye"></span>
+                </a>
+            </span>
+
+
+            <span class="h5">{{ note.title }}</span> <span class="pull-right text-muted">{{ note.updated }}</span>
+        </li>
+
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

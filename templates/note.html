@@ -7,12 +7,12 @@
 <div class="container">
     <div class="row">
         <div class="col-sm-8">
-            <div class="h1">{{ title }} <span class="pull-right"><i data-toggle="modal" data-target="#historyModal" class="btn btn-primary fa fa-code-fork"></i></span></div>
+            <div class="h3">{{ title }} <span class="pull-right"><i data-toggle="modal" data-target="#historyModal" class="btn btn-primary fa fa-code-fork"></i></span></div>
             {% if subtitle %}<div class="h3">{{ subtitle }}</div>{% endif %}
-            <p class="text-muted">{{ note.creator.full_name }} | {{ date }}{% if user.is_staff %} <a href="{% url "admin:blog_note_change" note.id %}" aria-label="Edit">
+            <p class="text-muted">{{ note.creator.full_name }} | Created {{ note.created }}; last updated {{ date }}{% if user.is_staff %} <a href="{% url "admin:blog_note_change" note.id %}" aria-label="Edit">
   <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
 </a>{% endif %}</p>
-
+            {% if source_url %}<p class="text-warning"><a href="{{ source_url }}" target="_blank">{{ source_url|truncatechars:50 }}</a></p>{% endif %}
             {% if note.about.count > 0 %}
                 <div class="h5">This note is about...</div>
                 <p>
@@ -25,54 +25,20 @@
                     {% endfor %}
                 </p>
             {% endif %}
+            <div class="btn-group">
+                {% for tag in note.tags.all %}
+                <a href="{% url 'tag' tag.id %}" class="btn btn-sm"><code><i class="fa fa-tag" aria-hidden="true"></i> {{ tag.slug }}</code></a>
+                {% endfor %}
 
-            <div>{{ body }}</div>
+            </div>
+
+            <iframe src="{% url "note-content" note.id %}" width="100%" height="500"></iframe>
 
         </div>
         <div class="col-sm-4">
-            {% if note.relations_to.count > 0 or note.relations_from.count > 0 %}
-            <div class="panel">
-                <div class="panel-heading">
-                    <span class="h3">Related content</span>
-                </div>
-                <ul class="list-group">
-                    {% for relation in note.relations_to.all %}
-                    <li class="list-group-item">
-                        <a  href="{{ relation.source.get_absolute_url }}"
-                            class="label label-primary"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.source.description }}"
-                            data-placement="top">{{ relation.source }}</a>
-                        <a  class="label label-default"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.instance_of.comment }}"
-                            data-placement="top">{{ relation.name }} ({{ relation.instance_of }})</a>
-                        <a class="label label-warning">this note</a>
-                        <div class="text text-info">{{ relation.description }}</div>
-                    </li>
-                    {% endfor %}
-                    {% for relation in note.relations_from.all %}
-                    <li class="list-group-item">
-                        <a class="label label-warning">this note</a>
-                        <a  class="label label-default"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.instance_of.comment }}"
-                            data-placement="top">{{ relation.name }} ({{ relation.instance_of }})</a>
-                        <a href="{{ relation.target.get_absolute_url }}"
-                            class="label label-primary"
-                            data-toggle="tooltip"
-                            data-html="true"
-                            title="{{ relation.target.description }}"
-                            data-placement="top">{{ relation.target }}</a>
-                        <div class="text text-info">{{ relation.description }}</div>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+            {% with note as instance %}
+            {% include "related_content.html" %}
+            {% endwith %}
         </div>
     </div>
 </div>
