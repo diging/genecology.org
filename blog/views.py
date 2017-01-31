@@ -507,7 +507,7 @@ def evernote_list_notes(request, notebook_id):
 @staff_member_required
 def evernote_sync_note(request, note_id):
 
-    tasks.sync_note.delay(int(request.user.id), note_id)
+    tasks.sync_note(int(request.user.id), note_id)
 
     last = request.GET.get('last', '/')
     return HttpResponseRedirect(last)
